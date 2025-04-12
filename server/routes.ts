@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import session from "express-session";
 import { openai, summarizeText, generateHealthSummary, generateHealthResponse, analyzeMedicalDocument } from "./lib/openai";
+import { smartWatchService } from "./lib/smartwatch";
 import memorystore from 'memorystore';
 import bcrypt from 'bcrypt';
 
@@ -805,6 +806,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  
+  // Initialize the SmartWatch WebSocket service
+  smartWatchService.initialize(httpServer);
+  console.log('SmartWatch integration initialized');
+  
   return httpServer;
 }
 
