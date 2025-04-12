@@ -3,7 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
-import { HealthMetric } from "@shared/schema";
 import { format } from "date-fns";
 import { Heart, Droplet, Scale, Stethoscope, Activity } from "lucide-react";
 import { 
@@ -11,83 +10,61 @@ import {
   AreaChart, Area, BarChart, Bar, Legend
 } from "recharts";
 
+// Define the structure of the data returned from the API
+interface HealthAnalyticsData {
+  bloodPressure: {
+    latest: string;
+    change: number;
+    data: {
+      date: string;
+      systolic: number;
+      diastolic: number;
+    }[];
+  };
+  bloodSugar: {
+    latest: string;
+    change: number;
+    data: {
+      date: string;
+      value: number;
+    }[];
+  };
+  weight: {
+    latest: string;
+    change: number;
+    data: {
+      date: string;
+      value: number;
+      bmi: number;
+    }[];
+  };
+}
+
 export default function Analytics() {
   const [timeRange, setTimeRange] = useState("3m");
   
-  const { data: metricsData, isLoading } = useQuery<HealthMetric[]>({
+  const { data: metricsData, isLoading } = useQuery<HealthAnalyticsData>({
     queryKey: ["/api/health-metrics"],
   });
 
-  const timeRangeInMs = {
-    "1m": 30 * 24 * 60 * 60 * 1000,
-    "3m": 90 * 24 * 60 * 60 * 1000,
-    "6m": 180 * 24 * 60 * 60 * 1000,
-    "1y": 365 * 24 * 60 * 60 * 1000,
-    "all": Infinity
-  };
+  // These arrays will contain the charting data
+  // Access data from the nested structure
+  const bloodPressureData = metricsData?.bloodPressure?.data || [];
+  const bloodSugarData = metricsData?.bloodSugar?.data || [];
+  const weightData = metricsData?.weight?.data || [];
+  
+  // For cholesterol, we'll use an empty array for now as it's not in our mock data
+  const cholesterolData: any[] = [];
 
-  const filterByTimeRange = (metrics: HealthMetric[]) => {
-    const now = new Date();
-    const cutoff = new Date(now.getTime() - timeRangeInMs[timeRange as keyof typeof timeRangeInMs]);
-    return metrics.filter(m => new Date(m.recordedAt) > cutoff);
-  };
-
-  // Group metrics by type
-  const bloodPressureData = metricsData 
-    ? filterByTimeRange(metricsData.filter(m => m.metricType === "blood_pressure"))
-        .map(m => ({
-          date: format(new Date(m.recordedAt), "MMM dd"),
-          systolic: JSON.parse(m.value).systolic,
-          diastolic: JSON.parse(m.value).diastolic
-        }))
-    : [];
-
-  const bloodSugarData = metricsData
-    ? filterByTimeRange(metricsData.filter(m => m.metricType === "blood_sugar"))
-        .map(m => ({
-          date: format(new Date(m.recordedAt), "MMM dd"),
-          value: Number(m.value)
-        }))
-    : [];
-
-  const weightData = metricsData
-    ? filterByTimeRange(metricsData.filter(m => m.metricType === "weight"))
-        .map(m => ({
-          date: format(new Date(m.recordedAt), "MMM dd"),
-          weight: Number(m.value),
-          bmi: Number(m.notes) // Assuming BMI is stored in notes
-        }))
-    : [];
-
-  const cholesterolData = metricsData
-    ? filterByTimeRange(metricsData.filter(m => m.metricType === "cholesterol"))
-        .map(m => {
-          const values = JSON.parse(m.value);
-          return {
-            date: format(new Date(m.recordedAt), "MMM dd"),
-            ldl: values.ldl,
-            hdl: values.hdl,
-            total: values.total,
-            triglycerides: values.triglycerides
-          };
-        })
-    : [];
-
-  const getLatestMetric = (metricType: string) => {
-    if (!metricsData) return null;
-    
-    const metrics = metricsData.filter(m => m.metricType === metricType);
-    if (metrics.length === 0) return null;
-    
-    // Sort by date descending and get first (most recent)
-    return metrics.sort((a, b) => 
-      new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime()
-    )[0];
-  };
-
-  const latestBloodPressure = getLatestMetric("blood_pressure");
-  const latestBloodSugar = getLatestMetric("blood_sugar");
-  const latestWeight = getLatestMetric("weight");
+  // Values for the metrics cards 
+  const latestBloodPressure = metricsData?.bloodPressure?.latest || null;
+  const bloodPressureChange = metricsData?.bloodPressure?.change || 0;
+  
+  const latestBloodSugar = metricsData?.bloodSugar?.latest || null;
+  const bloodSugarChange = metricsData?.bloodSugar?.change || 0;
+  
+  const latestWeight = metricsData?.weight?.latest || null;
+  const weightChange = metricsData?.weight?.change || 0;
 
   return (
     <div className="py-6 px-4 sm:px-6 lg:px-8">
@@ -129,7 +106,10 @@ export default function Analytics() {
                 <h3 className="text-sm font-medium text-gray-500 truncate">Blood Pressure</h3>
                 {latestBloodPressure ? (
                   <p className="text-2xl font-semibold text-gray-900">
-                    {JSON.parse(latestBloodPressure.value).systolic}/{JSON.parse(latestBloodPressure.value).diastolic}
+                    {latestBloodPressure}
+                    <span className="text-sm font-normal ml-2 text-gray-500">
+                      {bloodPressureChange > 0 ? '↑' : '↓'} {Math.abs(bloodPressureChange)}%
+                    </span>
                   </p>
                 ) : (
                   <p className="text-lg text-gray-500">No data</p>
@@ -150,7 +130,10 @@ export default function Analytics() {
                 <h3 className="text-sm font-medium text-gray-500 truncate">Blood Sugar</h3>
                 {latestBloodSugar ? (
                   <p className="text-2xl font-semibold text-gray-900">
-                    {latestBloodSugar.value} {latestBloodSugar.unit}
+                    {latestBloodSugar}
+                    <span className="text-sm font-normal ml-2 text-gray-500">
+                      {bloodSugarChange > 0 ? '↑' : '↓'} {Math.abs(bloodSugarChange)}%
+                    </span>
                   </p>
                 ) : (
                   <p className="text-lg text-gray-500">No data</p>
@@ -171,7 +154,10 @@ export default function Analytics() {
                 <h3 className="text-sm font-medium text-gray-500 truncate">Weight / BMI</h3>
                 {latestWeight ? (
                   <p className="text-2xl font-semibold text-gray-900">
-                    {latestWeight.value} {latestWeight.unit} / {latestWeight.notes}
+                    {latestWeight}
+                    <span className="text-sm font-normal ml-2 text-gray-500">
+                      {weightChange > 0 ? '↑' : '↓'} {Math.abs(weightChange)}%
+                    </span>
                   </p>
                 ) : (
                   <p className="text-lg text-gray-500">No data</p>
