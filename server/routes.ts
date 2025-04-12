@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import session from "express-session";
-import { openai, summarizeText, generateHealthSummary } from "./lib/openai";
+import { openai, summarizeText, generateHealthSummary, generateHealthResponse, analyzeMedicalDocument } from "./lib/openai";
 import memorystore from 'memorystore';
 import bcrypt from 'bcrypt';
 
