@@ -1,6 +1,7 @@
 import { pgTable, text, serial, integer, boolean, jsonb, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { relations } from "drizzle-orm";
 
 // Users table
 export const users = pgTable("users", {
@@ -24,7 +25,7 @@ export const users = pgTable("users", {
 // Medical Records table
 export const medicalRecords = pgTable("medical_records", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: integer("user_id").notNull().references(() => users.id),
   title: text("title").notNull(),
   description: text("description"),
   recordType: text("record_type").notNull(), // prescription, lab_report, diagnostic_image, etc.
@@ -43,7 +44,7 @@ export const medicalRecords = pgTable("medical_records", {
 // Health Metrics table
 export const healthMetrics = pgTable("health_metrics", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: integer("user_id").notNull().references(() => users.id),
   metricType: text("metric_type").notNull(), // blood_pressure, blood_sugar, weight, etc.
   value: text("value").notNull(), // JSON string of the metric value (e.g., {"systolic": 120, "diastolic": 80})
   unit: text("unit").notNull(), // mmHg, mg/dL, kg, etc.
@@ -55,7 +56,7 @@ export const healthMetrics = pgTable("health_metrics", {
 // Appointments table
 export const appointments = pgTable("appointments", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: integer("user_id").notNull().references(() => users.id),
   title: text("title").notNull(),
   description: text("description"),
   appointmentType: text("appointment_type").notNull(), // checkup, test, follow_up, etc.
@@ -74,7 +75,7 @@ export const appointments = pgTable("appointments", {
 // Family Members table
 export const familyMembers = pgTable("family_members", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(), // The user who owns the family vault
+  userId: integer("user_id").notNull().references(() => users.id), // The user who owns the family vault
   name: text("name").notNull(),
   relationship: text("relationship").notNull(), // spouse, child, parent, etc.
   dateOfBirth: text("date_of_birth"),
@@ -89,7 +90,7 @@ export const familyMembers = pgTable("family_members", {
 // AI Assistant Chat History table
 export const aiChatHistory = pgTable("ai_chat_history", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: integer("user_id").notNull().references(() => users.id),
   message: text("message").notNull(),
   response: text("response").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
@@ -127,6 +128,50 @@ export const insertAiChatHistorySchema = createInsertSchema(aiChatHistory).omit(
   id: true,
   createdAt: true,
 });
+
+// Define relations between tables
+export const usersRelations = relations(users, ({ many }) => ({
+  medicalRecords: many(medicalRecords),
+  healthMetrics: many(healthMetrics),
+  appointments: many(appointments),
+  familyMembers: many(familyMembers),
+  aiChatHistory: many(aiChatHistory)
+}));
+
+export const medicalRecordsRelations = relations(medicalRecords, ({ one }) => ({
+  user: one(users, {
+    fields: [medicalRecords.userId],
+    references: [users.id]
+  })
+}));
+
+export const healthMetricsRelations = relations(healthMetrics, ({ one }) => ({
+  user: one(users, {
+    fields: [healthMetrics.userId],
+    references: [users.id]
+  })
+}));
+
+export const appointmentsRelations = relations(appointments, ({ one }) => ({
+  user: one(users, {
+    fields: [appointments.userId],
+    references: [users.id]
+  })
+}));
+
+export const familyMembersRelations = relations(familyMembers, ({ one }) => ({
+  user: one(users, {
+    fields: [familyMembers.userId],
+    references: [users.id]
+  })
+}));
+
+export const aiChatHistoryRelations = relations(aiChatHistory, ({ one }) => ({
+  user: one(users, {
+    fields: [aiChatHistory.userId],
+    references: [users.id]
+  })
+}));
 
 // Type exports
 export type User = typeof users.$inferSelect;

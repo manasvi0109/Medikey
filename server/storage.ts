@@ -295,207 +295,161 @@ export class MemStorage implements IStorage {
   }
 }
 
-// Initialize and export storage instance
-export const storage = new MemStorage();
+// Database implementation
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
-// Seed some initial data for the default user
-(async () => {
-  try {
-    // Get the demo user
-    const demoUser = await storage.getUserByUsername("demo");
-    if (!demoUser) return;
-
-    const userId = demoUser.id;
-
-    // Add family members
-    await storage.createFamilyMember({
-      userId,
-      name: "John Johnson",
-      relationship: "Husband",
-      dateOfBirth: "1978-09-22",
-      gender: "Male",
-      bloodType: "A+",
-      allergies: "Shellfish",
-      chronicConditions: "High Cholesterol"
-    });
-
-    await storage.createFamilyMember({
-      userId,
-      name: "Emma Johnson",
-      relationship: "Daughter",
-      dateOfBirth: "2008-03-15",
-      gender: "Female",
-      bloodType: "B+",
-      allergies: "Pollen, Peanuts",
-      chronicConditions: "Mild Asthma"
-    });
-
-    // Add some medical records
-    await storage.createMedicalRecord({
-      userId,
-      title: "Annual Physical Results",
-      description: "Results from annual checkup with Dr. Emily Chen",
-      recordType: "summary",
-      provider: "Dr. Emily Chen",
-      providerType: "Primary Care",
-      recordDate: "2023-03-15T10:30:00Z",
-      fileContent: "base64EncodedContent",
-      fileType: "application/pdf",
-      fileName: "annual_physical_2023.pdf",
-      fileSize: 1024 * 1024,
-      tags: ["annual", "physical", "checkup"]
-    });
-
-    await storage.createMedicalRecord({
-      userId,
-      title: "Blood Test Results",
-      description: "Comprehensive metabolic panel and lipid profile",
-      recordType: "lab_report",
-      provider: "LabCorp",
-      providerType: "Laboratory",
-      recordDate: "2023-04-12T14:45:00Z",
-      fileContent: "base64EncodedContent",
-      fileType: "application/pdf",
-      fileName: "blood_test_apr2023.pdf",
-      fileSize: 889 * 1024,
-      tags: ["blood test", "cholesterol", "metabolic panel"]
-    });
-
-    await storage.createMedicalRecord({
-      userId,
-      title: "Prescription - Lisinopril",
-      description: "Prescription for blood pressure medication",
-      recordType: "prescription",
-      provider: "Dr. James Wilson",
-      providerType: "Cardiologist",
-      recordDate: "2023-03-28T16:15:00Z",
-      fileContent: "base64EncodedContent",
-      fileType: "application/pdf",
-      fileName: "lisinopril_rx_mar2023.pdf",
-      fileSize: 512 * 1024,
-      tags: ["prescription", "blood pressure", "hypertension"]
-    });
-
-    // Add some appointments
-    const today = new Date();
-    const nextMonth = new Date(today);
-    nextMonth.setMonth(today.getMonth() + 1);
-    
-    await storage.createAppointment({
-      userId,
-      title: "Annual Physical Exam",
-      description: "Yearly checkup",
-      appointmentType: "checkup",
-      providerName: "Dr. Emily Chen",
-      providerType: "Primary Care",
-      location: "Memorial Hospital",
-      appointmentDate: new Date(nextMonth.setDate(15)).toISOString(),
-      duration: 60,
-      reminderSet: true,
-      reminderTime: new Date(nextMonth.setDate(14)).toISOString(),
-      notes: "Remember to fast 12 hours before appointment"
-    });
-
-    const nextWeek = new Date(today);
-    nextWeek.setDate(today.getDate() + 7);
-    
-    await storage.createAppointment({
-      userId,
-      title: "Blood Work",
-      description: "Routine blood work",
-      appointmentType: "test",
-      providerName: "LabCorp",
-      providerType: "Laboratory",
-      location: "LabCorp Center",
-      appointmentDate: nextWeek.toISOString(),
-      duration: 30,
-      reminderSet: true,
-      reminderTime: new Date(nextWeek.setDate(nextWeek.getDate() - 1)).toISOString(),
-      notes: "Fasting required"
-    });
-
-    const nextTwoWeeks = new Date(today);
-    nextTwoWeeks.setDate(today.getDate() + 14);
-    
-    await storage.createAppointment({
-      userId,
-      title: "Pulmonology Follow-up",
-      description: "Follow-up for asthma management",
-      appointmentType: "follow_up",
-      providerName: "Dr. Mark Williams",
-      providerType: "Pulmonologist",
-      location: "City Medical Center",
-      appointmentDate: nextTwoWeeks.toISOString(),
-      duration: 45,
-      reminderSet: true,
-      reminderTime: new Date(nextTwoWeeks.setDate(nextTwoWeeks.getDate() - 1)).toISOString(),
-      notes: "Bring inhaler for evaluation"
-    });
-
-    // Seed some health metrics
-    // Blood pressure readings
-    for (let i = 0; i < 10; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() - i * 9);
-      
-      await storage.createHealthMetric({
-        userId,
-        metricType: "blood_pressure",
-        value: JSON.stringify({
-          systolic: Math.floor(Math.random() * 10) + 120,
-          diastolic: Math.floor(Math.random() * 10) + 75
-        }),
-        unit: "mmHg",
-        recordedAt: date.toISOString(),
-        notes: "Measured in the morning"
-      });
-    }
-
-    // Blood sugar readings
-    for (let i = 0; i < 10; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() - i * 9);
-      
-      await storage.createHealthMetric({
-        userId,
-        metricType: "blood_sugar",
-        value: String(Math.floor(Math.random() * 15) + 95),
-        unit: "mg/dL",
-        recordedAt: date.toISOString(),
-        notes: "Fasting blood glucose"
-      });
-    }
-
-    // Weight readings
-    for (let i = 0; i < 10; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() - i * 9);
-      const weight = 165 - (i * 0.2);
-      
-      await storage.createHealthMetric({
-        userId,
-        metricType: "weight",
-        value: weight.toFixed(1),
-        unit: "lbs",
-        recordedAt: date.toISOString(),
-        notes: (weight / (1.75 * 1.75) * 0.45359237).toFixed(1) // BMI
-      });
-    }
-
-    // Add sample chat history
-    await storage.createAiChatHistory({
-      userId,
-      message: "What were my last blood pressure readings?",
-      response: "Your most recent blood pressure reading was 128/82 mmHg, taken on April 20, 2023. This is within the normal range, showing good control of your hypertension. Would you like to see your blood pressure trend over time?"
-    });
-
-    await storage.createAiChatHistory({
-      userId,
-      message: "What are the side effects of Lisinopril?",
-      response: "Common side effects of Lisinopril may include dizziness, headache, fatigue, dry cough, and in some cases, a decrease in blood pressure. Less common but more serious side effects can include swelling of the face, lips, tongue, or throat, which requires immediate medical attention. It's important to take this medication as prescribed by your doctor and report any concerning side effects."
-    });
-
-  } catch (error) {
-    console.error("Error seeding initial data:", error);
+export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
-})();
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async updateUser(id: number, userData: Partial<User>): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async getMedicalRecord(id: number): Promise<MedicalRecord | undefined> {
+    const [record] = await db.select().from(medicalRecords).where(eq(medicalRecords.id, id));
+    return record;
+  }
+
+  async getMedicalRecordsByUserId(userId: number): Promise<MedicalRecord[]> {
+    return db.select().from(medicalRecords).where(eq(medicalRecords.userId, userId));
+  }
+
+  async createMedicalRecord(record: InsertMedicalRecord): Promise<MedicalRecord> {
+    const [newRecord] = await db
+      .insert(medicalRecords)
+      .values(record)
+      .returning();
+    return newRecord;
+  }
+
+  async updateMedicalRecord(id: number, recordData: Partial<MedicalRecord>): Promise<MedicalRecord> {
+    const [record] = await db
+      .update(medicalRecords)
+      .set(recordData)
+      .where(eq(medicalRecords.id, id))
+      .returning();
+    return record;
+  }
+
+  async deleteMedicalRecord(id: number): Promise<void> {
+    await db.delete(medicalRecords).where(eq(medicalRecords.id, id));
+  }
+
+  async getHealthMetric(id: number): Promise<HealthMetric | undefined> {
+    const [metric] = await db.select().from(healthMetrics).where(eq(healthMetrics.id, id));
+    return metric;
+  }
+
+  async getHealthMetricsByUserId(userId: number): Promise<HealthMetric[]> {
+    return db.select().from(healthMetrics).where(eq(healthMetrics.userId, userId));
+  }
+
+  async createHealthMetric(metric: InsertHealthMetric): Promise<HealthMetric> {
+    const [newMetric] = await db
+      .insert(healthMetrics)
+      .values(metric)
+      .returning();
+    return newMetric;
+  }
+
+  async getAppointment(id: number): Promise<Appointment | undefined> {
+    const [appointment] = await db.select().from(appointments).where(eq(appointments.id, id));
+    return appointment;
+  }
+
+  async getAppointmentsByUserId(userId: number): Promise<Appointment[]> {
+    return db.select().from(appointments).where(eq(appointments.userId, userId));
+  }
+
+  async createAppointment(appointment: InsertAppointment): Promise<Appointment> {
+    const [newAppointment] = await db
+      .insert(appointments)
+      .values(appointment)
+      .returning();
+    return newAppointment;
+  }
+
+  async updateAppointment(id: number, appointmentData: Partial<Appointment>): Promise<Appointment> {
+    const [appointment] = await db
+      .update(appointments)
+      .set(appointmentData)
+      .where(eq(appointments.id, id))
+      .returning();
+    return appointment;
+  }
+
+  async deleteAppointment(id: number): Promise<void> {
+    await db.delete(appointments).where(eq(appointments.id, id));
+  }
+
+  async getFamilyMember(id: number): Promise<FamilyMember | undefined> {
+    const [member] = await db.select().from(familyMembers).where(eq(familyMembers.id, id));
+    return member;
+  }
+
+  async getFamilyMembersByUserId(userId: number): Promise<FamilyMember[]> {
+    return db.select().from(familyMembers).where(eq(familyMembers.userId, userId));
+  }
+
+  async createFamilyMember(member: InsertFamilyMember): Promise<FamilyMember> {
+    const [newMember] = await db
+      .insert(familyMembers)
+      .values(member)
+      .returning();
+    return newMember;
+  }
+
+  async updateFamilyMember(id: number, memberData: Partial<FamilyMember>): Promise<FamilyMember> {
+    const [member] = await db
+      .update(familyMembers)
+      .set(memberData)
+      .where(eq(familyMembers.id, id))
+      .returning();
+    return member;
+  }
+
+  async deleteFamilyMember(id: number): Promise<void> {
+    await db.delete(familyMembers).where(eq(familyMembers.id, id));
+  }
+
+  async getAiChatHistory(id: number): Promise<AiChatHistory | undefined> {
+    const [chat] = await db.select().from(aiChatHistory).where(eq(aiChatHistory.id, id));
+    return chat;
+  }
+
+  async getAiChatHistoryByUserId(userId: number): Promise<AiChatHistory[]> {
+    return db.select().from(aiChatHistory).where(eq(aiChatHistory.userId, userId));
+  }
+
+  async createAiChatHistory(chat: InsertAiChatHistory): Promise<AiChatHistory> {
+    const [newChat] = await db
+      .insert(aiChatHistory)
+      .values(chat)
+      .returning();
+    return newChat;
+  }
+}
+
+export const storage = new DatabaseStorage();
