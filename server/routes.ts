@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import session from "express-session";
 import { openai, summarizeText, generateHealthSummary } from "./lib/openai";
 import memorystore from 'memorystore';
+import bcrypt from 'bcrypt';
 
 // For session store
 const MemoryStore = memorystore(session);
@@ -38,10 +39,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Username already exists" });
       }
 
-      // Create new user
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create new user with hashed password
       const user = await storage.createUser({
         username,
-        password, // Note: In a real app, we'd hash this
+        password: hashedPassword,
         fullName,
         email
       });
@@ -62,8 +66,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      // Check password (In a real app, we'd compare hashed passwords)
-      if (user.password !== password) {
+      // Compare the password with the hashed password in the database
+      const passwordMatch = await bcrypt.compare(password, user.password);
+      if (!passwordMatch) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
