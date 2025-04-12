@@ -105,3 +105,15 @@ export const getEmergencyAccessQR = async () => {
   const res = await apiRequest("GET", "/api/emergency/qr-code", undefined);
   return res.json();
 };
+
+/**
+ * Smartwatch Integration
+ */
+export const getConnectedSmartWatchDevices = async () => {
+  const res = await apiRequest("GET", "/api/smartwatch/connected-devices", undefined);
+  return res.json();
+};
+
+export const sendCommandToSmartWatch = async (deviceId: string, command: string, data: any = {}) => {
+  return apiRequest("POST", "/api/smartwatch/send-command", { deviceId, command, data });
+};

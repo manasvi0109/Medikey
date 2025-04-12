@@ -5,10 +5,11 @@ import HealthAnalyticsSection from "@/components/dashboard/HealthAnalyticsSectio
 import RecentMedicalRecordsSection from "@/components/dashboard/RecentMedicalRecordsSection";
 import FamilyVaultSection from "@/components/dashboard/FamilyVaultSection";
 import AIAssistantCard from "@/components/dashboard/AIAssistantCard";
+import { LiveHealthMetrics, SmartWatchIntegration } from "@/components/smartwatch";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
-import { Shield, Calendar, Heart, FileText, Users, Bot } from "lucide-react";
+import { Shield, Calendar, Heart, FileText, Users, Bot, Watch } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Dashboard() {
