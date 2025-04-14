@@ -1,4 +1,4 @@
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
 import { lazy, Suspense } from "react";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
@@ -41,6 +41,11 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
 
 function App() {
   const { isAuthenticated, isLoading } = useAuth();
+  const [location] = useLocation();
+
+  // Check if we're on GitHub Pages
+  const isGitHubPages = window.location.hostname.includes('github.io');
+  const basePath = isGitHubPages ? '/medikey' : '';
 
   if (isLoading) {
     return <LoadingFallback />;
@@ -49,62 +54,62 @@ function App() {
   return (
     <Switch>
       {/* Public routes */}
-      <Route path="/login" component={Login} />
-      <Route path="/register" component={Register} />
+      <Route path={`${basePath}/login`} component={Login} />
+      <Route path={`${basePath}/register`} component={Register} />
 
       {/* Protected routes */}
       {isAuthenticated ? (
         <>
-          <Route path="/">
+          <Route path={`${basePath}/`}>
             {() => (
               <AuthenticatedLayout>
                 <Dashboard />
               </AuthenticatedLayout>
             )}
           </Route>
-          <Route path="/dashboard">
+          <Route path={`${basePath}/dashboard`}>
             {() => (
               <AuthenticatedLayout>
                 <Dashboard />
               </AuthenticatedLayout>
             )}
           </Route>
-          <Route path="/records">
+          <Route path={`${basePath}/records`}>
             {() => (
               <AuthenticatedLayout>
                 <Records />
               </AuthenticatedLayout>
             )}
           </Route>
-          <Route path="/analytics">
+          <Route path={`${basePath}/analytics`}>
             {() => (
               <AuthenticatedLayout>
                 <Analytics />
               </AuthenticatedLayout>
             )}
           </Route>
-          <Route path="/family">
+          <Route path={`${basePath}/family`}>
             {() => (
               <AuthenticatedLayout>
                 <Family />
               </AuthenticatedLayout>
             )}
           </Route>
-          <Route path="/appointments">
+          <Route path={`${basePath}/appointments`}>
             {() => (
               <AuthenticatedLayout>
                 <Appointments />
               </AuthenticatedLayout>
             )}
           </Route>
-          <Route path="/assistant">
+          <Route path={`${basePath}/assistant`}>
             {() => (
               <AuthenticatedLayout>
                 <Assistant />
               </AuthenticatedLayout>
             )}
           </Route>
-          <Route path="/emergency">
+          <Route path={`${basePath}/emergency`}>
             {() => (
               <AuthenticatedLayout>
                 <Emergency />
@@ -115,7 +120,7 @@ function App() {
       ) : (
         <Route path="*">
           {() => {
-            window.location.href = "/login";
+            window.location.href = `${basePath}/login`;
             return null;
           }}
         </Route>
