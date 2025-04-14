@@ -10,6 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { format } from "date-fns";
 import { Download, Eye, FileText, MoreVertical, Share2, Trash } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Badge, RecordTypeIcon, formatFileSize } from "./RecordBadge";
 
 interface RecordListProps {
   records: MedicalRecord[];
@@ -70,17 +71,17 @@ export default function RecordList({ records, onRecordSelect }: RecordListProps)
             <div className="flex items-center">
               <div className={cn(
                 "flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center",
-                record.recordType === "prescription" 
-                  ? "bg-green-100" 
-                  : record.recordType === "lab_report" 
-                    ? "bg-primary-100" 
-                    : record.recordType === "diagnostic_image" 
-                      ? "bg-purple-100" 
+                record.recordType === "prescription"
+                  ? "bg-green-100"
+                  : record.recordType === "lab_report"
+                    ? "bg-primary-100"
+                    : record.recordType === "diagnostic_image"
+                      ? "bg-purple-100"
                       : "bg-blue-100"
               )}>
                 <RecordTypeIcon type={record.recordType} />
               </div>
-              
+
               <div className="ml-4 flex-1">
                 <div className="flex items-center justify-between">
                   <div>
@@ -95,16 +96,16 @@ export default function RecordList({ records, onRecordSelect }: RecordListProps)
                     <Badge type={record.recordType} />
                   </div>
                 </div>
-                
+
                 {record.description && (
                   <p className="mt-2 text-sm text-gray-600 line-clamp-2">{record.description}</p>
                 )}
-                
+
                 <div className="mt-2 flex items-center text-xs text-gray-500">
                   <span className="truncate">{record.fileName}</span>
                   <span className="mx-1">•</span>
                   <span>{formatFileSize(record.fileSize)}</span>
-                  
+
                   {record.tags && record.tags.length > 0 && (
                     <div className="ml-4 flex flex-wrap gap-1">
                       {record.tags.map((tag, index) => (
@@ -116,7 +117,7 @@ export default function RecordList({ records, onRecordSelect }: RecordListProps)
                   )}
                 </div>
               </div>
-              
+
               <div className="ml-4 flex-shrink-0 flex space-x-2">
                 <Button
                   variant="outline"
@@ -151,7 +152,7 @@ export default function RecordList({ records, onRecordSelect }: RecordListProps)
                     <DropdownMenuItem>
                       <Share2 className="h-4 w-4 mr-2" /> Share Record
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       className="text-red-600"
                       onClick={() => setRecordToDelete(record)}
                     >
@@ -164,7 +165,7 @@ export default function RecordList({ records, onRecordSelect }: RecordListProps)
           </div>
         </Card>
       ))}
-      
+
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!recordToDelete} onOpenChange={(open) => !open && setRecordToDelete(null)}>
         <AlertDialogContent>
@@ -176,7 +177,7 @@ export default function RecordList({ records, onRecordSelect }: RecordListProps)
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               className="bg-red-600 hover:bg-red-700"
               onClick={confirmDelete}
               disabled={deleteRecordMutation.isPending}
@@ -190,87 +191,8 @@ export default function RecordList({ records, onRecordSelect }: RecordListProps)
   );
 }
 
-function RecordTypeIcon({ type }: { type: string }) {
-  switch (type) {
-    case "prescription":
-      return (
-        <svg className="h-5 w-5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M9 12H15" />
-          <path d="M12 9V15" />
-          <path d="M19 20H5C3.89543 20 3 19.1046 3 18V6C3 4.89543 3.89543 4 5 4H15L21 10V18C21 19.1046 20.1046 20 19 20Z" />
-          <path d="M17 4V10H21" />
-        </svg>
-      );
-    case "lab_report":
-      return (
-        <svg className="h-5 w-5 text-primary-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" />
-          <path d="M8 10H16" />
-          <path d="M8 14H12" />
-          <path d="M8 18H16" />
-          <path d="M8 6H16" />
-        </svg>
-      );
-    case "diagnostic_image":
-      return (
-        <svg className="h-5 w-5 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <rect x="3" y="3" width="18" height="18" rx="2" />
-          <circle cx="8.5" cy="8.5" r="1.5" />
-          <path d="M21 15L16 10L5 21" />
-        </svg>
-      );
-    default:
-      return (
-        <svg className="h-5 w-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M14 3V7C14 7.55228 14.4477 8 15 8H19" />
-          <path d="M17 21H7C5.89543 21 5 20.1046 5 19V5C5 3.89543 5.89543 3 7 3H14L19 8V19C19 20.1046 18.1046 21 17 21Z" />
-          <path d="M9 7H10" />
-          <path d="M9 13H15" />
-          <path d="M9 17H15" />
-        </svg>
-      );
-  }
-}
+// Using the imported RecordTypeIcon from RecordBadge.tsx
 
-function Badge({ type }: { type: string }) {
-  let bgColor = "bg-gray-100";
-  let textColor = "text-gray-800";
-  let label = type.replace("_", " ");
+// Using the imported Badge from RecordBadge.tsx
 
-  switch (type) {
-    case "prescription":
-      bgColor = "bg-green-100";
-      textColor = "text-green-800";
-      break;
-    case "lab_report":
-      bgColor = "bg-primary-100";
-      textColor = "text-primary-800";
-      break;
-    case "diagnostic_image":
-      bgColor = "bg-purple-100";
-      textColor = "text-purple-800";
-      break;
-    case "summary":
-      bgColor = "bg-blue-100";
-      textColor = "text-blue-800";
-      break;
-  }
-
-  label = label.charAt(0).toUpperCase() + label.slice(1);
-
-  return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bgColor} ${textColor}`}>
-      {label}
-    </span>
-  );
-}
-
-function formatFileSize(sizeInBytes: number): string {
-  if (sizeInBytes < 1024) {
-    return `${sizeInBytes} B`;
-  } else if (sizeInBytes < 1024 * 1024) {
-    return `${(sizeInBytes / 1024).toFixed(1)} KB`;
-  } else {
-    return `${(sizeInBytes / (1024 * 1024)).toFixed(1)} MB`;
-  }
-}
+// Using the imported formatFileSize from RecordBadge.tsx

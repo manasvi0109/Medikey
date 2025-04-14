@@ -71,7 +71,7 @@ export default function Assistant() {
           timestamp: new Date(item.createdAt)
         }
       ]);
-      
+
       setMessages(prev => [prev[0], ...formattedHistory]);
     }
   }, [chatHistory]);
@@ -92,6 +92,8 @@ export default function Assistant() {
 
   const handleSendMessage = () => {
     if (inputValue.trim() === "") return;
+
+    console.log("Sending message to AI assistant:", inputValue);
 
     const newMessage: Message = {
       content: inputValue,

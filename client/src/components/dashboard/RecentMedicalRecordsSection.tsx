@@ -43,7 +43,7 @@ export default function RecentMedicalRecordsSection() {
           </a>
         </Link>
       </div>
-      
+
       <Card className="shadow overflow-hidden sm:rounded-md">
         <ul className="divide-y divide-gray-200">
           {isLoading ? (
@@ -61,10 +61,10 @@ export default function RecentMedicalRecordsSection() {
             </li>
           ) : records.length > 0 ? (
             records.map((record) => (
-              <RecordItem 
-                key={record.id} 
-                record={record} 
-                onViewClick={() => setSelectedRecord(record)} 
+              <RecordItem
+                key={record.id}
+                record={record}
+                onViewClick={() => setSelectedRecord(record)}
               />
             ))
           ) : (
@@ -78,7 +78,7 @@ export default function RecentMedicalRecordsSection() {
             </li>
           )}
         </ul>
-        
+
         {records.length > 0 && (
           <div className="px-4 py-4 sm:px-6 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
             <p className="text-sm text-gray-500">
@@ -133,12 +133,12 @@ function RecordItem({ record, onViewClick }: RecordItemProps) {
           <div className="flex items-center">
             <div className={cn(
               "flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center",
-              record.recordType === "prescription" 
-                ? "bg-green-100" 
-                : record.recordType === "lab_report" 
-                  ? "bg-primary-100" 
-                  : record.recordType === "diagnostic_image" 
-                    ? "bg-purple-100" 
+              record.recordType === "prescription"
+                ? "bg-green-100"
+                : record.recordType === "lab_report"
+                  ? "bg-primary-100"
+                  : record.recordType === "diagnostic_image"
+                    ? "bg-purple-100"
                     : "bg-blue-100"
             )}>
               <RecordTypeIcon type={record.recordType} />

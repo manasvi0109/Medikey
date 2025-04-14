@@ -1,13 +1,13 @@
-import { 
-  users, 
-  medicalRecords, 
-  healthMetrics, 
-  appointments, 
-  familyMembers, 
+import {
+  users,
+  medicalRecords,
+  healthMetrics,
+  appointments,
+  familyMembers,
   aiChatHistory,
-  type User, 
-  type InsertUser, 
-  type MedicalRecord, 
+  type User,
+  type InsertUser,
+  type MedicalRecord,
   type InsertMedicalRecord,
   type HealthMetric,
   type InsertHealthMetric,
@@ -18,6 +18,8 @@ import {
   type AiChatHistory,
   type InsertAiChatHistory
 } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 // Interface with all the storage methods we need
 export interface IStorage {
@@ -59,7 +61,10 @@ export interface IStorage {
   createAiChatHistory(chat: InsertAiChatHistory): Promise<AiChatHistory>;
 }
 
-// Memory storage implementation
+import fs from 'fs';
+import path from 'path';
+
+// Memory storage implementation with file persistence
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private medicalRecords: Map<number, MedicalRecord>;
@@ -74,8 +79,12 @@ export class MemStorage implements IStorage {
   private appointmentIdCounter: number;
   private memberIdCounter: number;
   private chatIdCounter: number;
+  private dataFilePath: string;
 
   constructor() {
+    this.dataFilePath = path.join(process.cwd(), 'data.json');
+
+    // Initialize with default values
     this.users = new Map();
     this.medicalRecords = new Map();
     this.healthMetrics = new Map();
@@ -90,21 +99,88 @@ export class MemStorage implements IStorage {
     this.memberIdCounter = 1;
     this.chatIdCounter = 1;
 
-    // Add a default user for testing
-    this.createUser({
-      username: "demo",
-      password: "password",
-      fullName: "Sarah Johnson",
-      email: "sarah@example.com",
-      phone: "+1 (555) 123-4567",
-      dateOfBirth: "1980-04-15",
-      gender: "Female",
-      bloodType: "B+",
-      allergies: "Penicillin, Peanuts",
-      chronicConditions: "Asthma, Hypertension",
-      emergencyContactName: "John Johnson",
-      emergencyContactPhone: "+1 (555) 987-6543"
-    });
+    // Load data from file if it exists
+    this.loadFromFile();
+
+    // Add a default user for testing if no users exist
+    if (this.users.size === 0) {
+      this.createUser({
+        username: "demo",
+        password: "password",
+        fullName: "Sarah Johnson",
+        email: "sarah@example.com",
+        phone: "+1 (555) 123-4567",
+        dateOfBirth: "1980-04-15",
+        gender: "Female",
+        bloodType: "B+",
+        allergies: "Penicillin, Peanuts",
+        chronicConditions: "Asthma, Hypertension",
+        emergencyContactName: "John Johnson",
+        emergencyContactPhone: "+1 (555) 987-6543"
+      });
+    }
+  }
+
+  private loadFromFile() {
+    try {
+      if (fs.existsSync(this.dataFilePath)) {
+        const data = JSON.parse(fs.readFileSync(this.dataFilePath, 'utf8'));
+
+        // Restore counters from file
+        this.userIdCounter = data.userIdCounter || 1;
+        this.recordIdCounter = data.recordIdCounter || 1;
+        this.metricIdCounter = data.metricIdCounter || 1;
+        this.appointmentIdCounter = data.appointmentIdCounter || 1;
+        this.memberIdCounter = data.memberIdCounter || 1;
+        this.chatIdCounter = data.chatIdCounter || 1;
+
+        // Restore maps
+        if (data.users) {
+          this.users = new Map(Object.entries(data.users).map(([k, v]) => [Number(k), v as User]));
+        }
+        if (data.medicalRecords) {
+          this.medicalRecords = new Map(Object.entries(data.medicalRecords).map(([k, v]) => [Number(k), v as MedicalRecord]));
+        }
+        if (data.healthMetrics) {
+          this.healthMetrics = new Map(Object.entries(data.healthMetrics).map(([k, v]) => [Number(k), v as HealthMetric]));
+        }
+        if (data.appointments) {
+          this.appointments = new Map(Object.entries(data.appointments).map(([k, v]) => [Number(k), v as Appointment]));
+        }
+        if (data.familyMembers) {
+          this.familyMembers = new Map(Object.entries(data.familyMembers).map(([k, v]) => [Number(k), v as FamilyMember]));
+        }
+        if (data.aiChatHistory) {
+          this.aiChatHistory = new Map(Object.entries(data.aiChatHistory).map(([k, v]) => [Number(k), v as AiChatHistory]));
+        }
+      }
+    } catch (error) {
+      console.error('Error loading data from file:', error);
+    }
+  }
+
+  private saveToFile() {
+    try {
+      // Convert maps to objects for JSON serialization
+      const data = {
+        userIdCounter: this.userIdCounter,
+        recordIdCounter: this.recordIdCounter,
+        metricIdCounter: this.metricIdCounter,
+        appointmentIdCounter: this.appointmentIdCounter,
+        memberIdCounter: this.memberIdCounter,
+        chatIdCounter: this.chatIdCounter,
+        users: Object.fromEntries(this.users),
+        medicalRecords: Object.fromEntries(this.medicalRecords),
+        healthMetrics: Object.fromEntries(this.healthMetrics),
+        appointments: Object.fromEntries(this.appointments),
+        familyMembers: Object.fromEntries(this.familyMembers),
+        aiChatHistory: Object.fromEntries(this.aiChatHistory)
+      };
+
+      fs.writeFileSync(this.dataFilePath, JSON.stringify(data, null, 2));
+    } catch (error) {
+      console.error('Error saving data to file:', error);
+    }
   }
 
   // User methods
@@ -123,6 +199,7 @@ export class MemStorage implements IStorage {
     const now = new Date().toISOString();
     const user: User = { ...userData, id, createdAt: now };
     this.users.set(id, user);
+    this.saveToFile();
     return user;
   }
 
@@ -131,9 +208,10 @@ export class MemStorage implements IStorage {
     if (!user) {
       throw new Error(`User with ID ${id} not found`);
     }
-    
+
     const updatedUser = { ...user, ...userData };
     this.users.set(id, updatedUser);
+    this.saveToFile();
     return updatedUser;
   }
 
@@ -153,6 +231,7 @@ export class MemStorage implements IStorage {
     const now = new Date().toISOString();
     const record: MedicalRecord = { ...recordData, id, aiSummary: null, createdAt: now };
     this.medicalRecords.set(id, record);
+    this.saveToFile();
     return record;
   }
 
@@ -161,9 +240,10 @@ export class MemStorage implements IStorage {
     if (!record) {
       throw new Error(`Medical record with ID ${id} not found`);
     }
-    
+
     const updatedRecord = { ...record, ...recordData };
     this.medicalRecords.set(id, updatedRecord);
+    this.saveToFile();
     return updatedRecord;
   }
 
@@ -171,8 +251,9 @@ export class MemStorage implements IStorage {
     if (!this.medicalRecords.has(id)) {
       throw new Error(`Medical record with ID ${id} not found`);
     }
-    
+
     this.medicalRecords.delete(id);
+    this.saveToFile();
   }
 
   // Health Metrics methods
@@ -191,6 +272,7 @@ export class MemStorage implements IStorage {
     const now = new Date().toISOString();
     const metric: HealthMetric = { ...metricData, id, createdAt: now };
     this.healthMetrics.set(id, metric);
+    this.saveToFile();
     return metric;
   }
 
@@ -208,13 +290,14 @@ export class MemStorage implements IStorage {
   async createAppointment(appointmentData: InsertAppointment): Promise<Appointment> {
     const id = this.appointmentIdCounter++;
     const now = new Date().toISOString();
-    const appointment: Appointment = { 
-      ...appointmentData, 
-      id, 
-      status: "scheduled", 
-      createdAt: now 
+    const appointment: Appointment = {
+      ...appointmentData,
+      id,
+      status: "scheduled",
+      createdAt: now
     };
     this.appointments.set(id, appointment);
+    this.saveToFile();
     return appointment;
   }
 
@@ -223,9 +306,10 @@ export class MemStorage implements IStorage {
     if (!appointment) {
       throw new Error(`Appointment with ID ${id} not found`);
     }
-    
+
     const updatedAppointment = { ...appointment, ...appointmentData };
     this.appointments.set(id, updatedAppointment);
+    this.saveToFile();
     return updatedAppointment;
   }
 
@@ -233,8 +317,9 @@ export class MemStorage implements IStorage {
     if (!this.appointments.has(id)) {
       throw new Error(`Appointment with ID ${id} not found`);
     }
-    
+
     this.appointments.delete(id);
+    this.saveToFile();
   }
 
   // Family Members methods
@@ -253,6 +338,7 @@ export class MemStorage implements IStorage {
     const now = new Date().toISOString();
     const member: FamilyMember = { ...memberData, id, createdAt: now };
     this.familyMembers.set(id, member);
+    this.saveToFile();
     return member;
   }
 
@@ -261,9 +347,10 @@ export class MemStorage implements IStorage {
     if (!member) {
       throw new Error(`Family member with ID ${id} not found`);
     }
-    
+
     const updatedMember = { ...member, ...memberData };
     this.familyMembers.set(id, updatedMember);
+    this.saveToFile();
     return updatedMember;
   }
 
@@ -271,8 +358,9 @@ export class MemStorage implements IStorage {
     if (!this.familyMembers.has(id)) {
       throw new Error(`Family member with ID ${id} not found`);
     }
-    
+
     this.familyMembers.delete(id);
+    this.saveToFile();
   }
 
   // AI Chat History methods
@@ -291,6 +379,7 @@ export class MemStorage implements IStorage {
     const now = new Date().toISOString();
     const chat: AiChatHistory = { ...chatData, id, createdAt: now };
     this.aiChatHistory.set(id, chat);
+    this.saveToFile();
     return chat;
   }
 }
@@ -452,4 +541,5 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+// Use MemStorage for local development
+export const storage = new MemStorage();

@@ -116,6 +116,18 @@ export default function Dashboard() {
       {/* Family Vault Section */}
       <FamilyVaultSection />
 
+      {/* Smartwatch Integration */}
+      <div className="mb-6">
+        <h2 className="text-xl font-medium mb-4 flex items-center gap-2">
+          <Watch className="h-5 w-5" />
+          Smartwatch Integration
+        </h2>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <LiveHealthMetrics />
+          <SmartWatchIntegration userId={user?.id || 0} />
+        </div>
+      </div>
+
       {/* AI Assistant Card */}
       <AIAssistantCard />
     </div>

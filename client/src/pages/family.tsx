@@ -16,6 +16,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
+// Helper function to calculate age from date of birth
+function calculateAge(dateOfBirth: string): number {
+  const today = new Date();
+  const birthDate = new Date(dateOfBirth);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+}
+
 const familyMemberFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
   relationship: z.string().min(1, "Relationship is required"),
@@ -194,7 +206,7 @@ export default function Family() {
                       <Edit className="mr-2 h-4 w-4" />
                       Edit
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       className="text-red-600"
                       onClick={() => {
                         if (window.confirm(`Are you sure you want to remove ${member.name}?`)) {
@@ -254,8 +266,8 @@ export default function Family() {
       )}
 
       {/* Add/Edit Family Member Modal */}
-      <Dialog 
-        open={isAddModalOpen || !!editingMember} 
+      <Dialog
+        open={isAddModalOpen || !!editingMember}
         onOpenChange={(open) => {
           if (!open) {
             setIsAddModalOpen(false);
@@ -269,8 +281,8 @@ export default function Family() {
               {editingMember ? "Edit Family Member" : "Add Family Member"}
             </DialogTitle>
             <DialogDescription>
-              {editingMember 
-                ? "Update information for your family member" 
+              {editingMember
+                ? "Update information for your family member"
                 : "Add a new member to your family vault"}
             </DialogDescription>
           </DialogHeader>
@@ -352,7 +364,7 @@ export default function Family() {
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 type="submit"
                 disabled={addMemberMutation.isPending || updateMemberMutation.isPending}
               >
@@ -366,15 +378,4 @@ export default function Family() {
   );
 }
 
-function calculateAge(dateOfBirth: string): number {
-  const today = new Date();
-  const birthDate = new Date(dateOfBirth);
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-  
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-  
-  return age;
-}
+// Function removed - duplicate

@@ -1,0 +1,54 @@
+{
+  "userIdCounter": 3,
+  "recordIdCounter": 1,
+  "metricIdCounter": 1,
+  "appointmentIdCounter": 1,
+  "memberIdCounter": 1,
+  "chatIdCounter": 3,
+  "users": {
+    "1": {
+      "username": "demo",
+      "password": "password",
+      "fullName": "Sarah Johnson",
+      "email": "sarah@example.com",
+      "phone": "+1 (555) 123-4567",
+      "dateOfBirth": "1980-04-15",
+      "gender": "Female",
+      "bloodType": "B+",
+      "allergies": "Penicillin, Peanuts",
+      "chronicConditions": "Asthma, Hypertension",
+      "emergencyContactName": "John Johnson",
+      "emergencyContactPhone": "+1 (555) 987-6543",
+      "id": 1,
+      "createdAt": "2025-04-14T16:08:23.287Z"
+    },
+    "2": {
+      "username": "manasvi",
+      "password": "$2b$10$N5pKJssA8gXturQZQVXmeeFocvGOADqVd0fyKSj0IWRI4A4OzsIga",
+      "fullName": "Manasvi",
+      "email": "manasvi010903@gmail.com",
+      "id": 2,
+      "createdAt": "2025-04-14T16:09:01.397Z"
+    }
+  },
+  "medicalRecords": {},
+  "healthMetrics": {},
+  "appointments": {},
+  "familyMembers": {},
+  "aiChatHistory": {
+    "1": {
+      "userId": 2,
+      "message": "what is bp",
+      "response": "I can help answer questions about your health records, medications, or upcoming appointments. Try asking about specific health concerns like 'Tell me about my blood pressure' or 'What medications am I taking?' Please note that I'm not a replacement for professional medical advice, and you should always consult your healthcare provider for medical decisions.",
+      "id": 1,
+      "createdAt": "2025-04-14T16:46:01.315Z"
+    },
+    "2": {
+      "userId": 2,
+      "message": "what is asthma",
+      "response": "You have a history of asthma diagnosed in 2005, currently managed with an Albuterol inhaler as needed. Your last severe exacerbation was in 2019 due to a respiratory infection. It's important to keep your inhaler with you at all times, avoid known triggers, and maintain regular follow-ups with your pulmonologist, Dr. Mark Williams.",
+      "id": 2,
+      "createdAt": "2025-04-14T16:46:09.159Z"
+    }
+  }
+}

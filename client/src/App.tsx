@@ -14,6 +14,7 @@ const Analytics = lazy(() => import("@/pages/analytics"));
 const Family = lazy(() => import("@/pages/family"));
 const Appointments = lazy(() => import("@/pages/appointments"));
 const Assistant = lazy(() => import("@/pages/assistant"));
+const Emergency = lazy(() => import("@/pages/emergency"));
 
 function LoadingFallback() {
   return (
@@ -100,6 +101,13 @@ function App() {
             {() => (
               <AuthenticatedLayout>
                 <Assistant />
+              </AuthenticatedLayout>
+            )}
+          </Route>
+          <Route path="/emergency">
+            {() => (
+              <AuthenticatedLayout>
+                <Emergency />
               </AuthenticatedLayout>
             )}
           </Route>

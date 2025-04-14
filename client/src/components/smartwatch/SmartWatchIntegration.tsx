@@ -53,7 +53,7 @@ export const SmartWatchIntegration = ({ userId }: { userId: number }) => {
 
   // Mutation for sending commands
   const sendCommandMutation = useMutation({
-    mutationFn: ({ deviceId, command, data }: {deviceId: string, command: string, data: any}) => 
+    mutationFn: ({ deviceId, command, data }: {deviceId: string, command: string, data: any}) =>
       sendCommandToSmartWatch(deviceId, command, data),
     onSuccess: () => {
       toast({
@@ -76,7 +76,7 @@ export const SmartWatchIntegration = ({ userId }: { userId: number }) => {
   const handleSendCommand = (deviceId: string, command: string, data: any = {}) => {
     sendCommandMutation.mutate({ deviceId, command, data });
   };
-  
+
   // Generate QR code for connecting
   const renderSmartWatchConnectionInfo = () => {
     return (
@@ -183,8 +183,8 @@ export const SmartWatchIntegration = ({ userId }: { userId: number }) => {
             <CardContent className="flex-1">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">Real-time monitoring</span>
-                <Switch 
-                  checked={true} 
+                <Switch
+                  checked={true}
                   onCheckedChange={(checked) => {
                     handleSendCommand(device.deviceId, 'set_monitoring', { enabled: checked });
                   }}
@@ -192,7 +192,7 @@ export const SmartWatchIntegration = ({ userId }: { userId: number }) => {
               </div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">Alerts enabled</span>
-                <Switch 
+                <Switch
                   checked={true}
                   onCheckedChange={(checked) => {
                     handleSendCommand(device.deviceId, 'set_alerts', { enabled: checked });

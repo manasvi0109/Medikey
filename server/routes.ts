@@ -4,20 +4,13 @@ import { storage } from "./storage";
 import session from "express-session";
 import { openai, summarizeText, generateHealthSummary, generateHealthResponse, analyzeMedicalDocument } from "./lib/openai";
 import { smartWatchService } from "./lib/smartwatch";
-import memorystore from 'memorystore';
 import bcrypt from 'bcrypt';
-
-// For session store
-const MemoryStore = memorystore(session);
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup session middleware
   app.use(
     session({
       cookie: { maxAge: 86400000 }, // 24 hours
-      store: new MemoryStore({
-        checkPeriod: 86400000 // prune expired entries every 24h
-      }),
       secret: process.env.SESSION_SECRET || "medikey-secret",
       resave: false,
       saveUninitialized: false
@@ -33,7 +26,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/register", async (req, res) => {
     try {
       const { username, password, fullName, email } = req.body;
-      
+
       // Check if user already exists
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
@@ -60,7 +53,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { username, password } = req.body;
-      
+
       // Find user by username
       const user = await storage.getUserByUsername(username);
       if (!user) {
@@ -75,7 +68,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Set user in session
       req.session.userId = user.id;
-      
+
       res.json({ message: "Login successful", user: { id: user.id, username: user.username } });
     } catch (error) {
       res.status(500).json({ message: "Login failed", error: error.message });
@@ -138,7 +131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const updatedUser = await storage.updateUser(userId, req.body);
-      
+
       // Remove password from response
       const { password, ...userWithoutPassword } = updatedUser;
       res.json(userWithoutPassword);
@@ -155,7 +148,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const { bloodType, allergies, chronicConditions, emergencyContactName, emergencyContactPhone } = req.body;
-      
+
       const updatedUser = await storage.updateUser(userId, {
         bloodType,
         allergies,
@@ -163,7 +156,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         emergencyContactName,
         emergencyContactPhone
       });
-      
+
       // Remove password from response
       const { password, ...userWithoutPassword } = updatedUser;
       res.json(userWithoutPassword);
@@ -196,17 +189,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const perPage = 3; // Number of records per page
 
       const allRecords = await storage.getMedicalRecordsByUserId(req.session.userId);
-      
+
       // Sort by most recent
       const sortedRecords = allRecords.sort((a, b) => {
         return new Date(b.recordDate).getTime() - new Date(a.recordDate).getTime();
       });
-      
+
       // Paginate
       const startIndex = (page - 1) * perPage;
       const endIndex = startIndex + perPage;
       const paginatedRecords = sortedRecords.slice(startIndex, endIndex);
-      
+
       res.json({
         records: paginatedRecords,
         total: allRecords.length,
@@ -225,14 +218,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const userId = req.session.userId;
-      const { 
-        title, 
-        description, 
-        recordType, 
-        provider, 
-        providerType, 
-        recordDate, 
-        tags 
+      const {
+        title,
+        description,
+        recordType,
+        provider,
+        providerType,
+        recordDate,
+        tags
       } = req.body;
 
       // Simulate file handling (in a real app, you'd process an actual file)
@@ -274,16 +267,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const recordId = parseInt(req.params.id);
       const record = await storage.getMedicalRecord(recordId);
-      
+
       if (!record) {
         return res.status(404).json({ message: "Record not found" });
       }
-      
+
       // Check if user has access to this record
       if (record.userId !== req.session.userId) {
         return res.status(403).json({ message: "Access denied" });
       }
-      
+
       res.json(record);
     } catch (error) {
       res.status(500).json({ message: "Failed to get medical record", error: error.message });
@@ -298,16 +291,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const recordId = parseInt(req.params.id);
       const record = await storage.getMedicalRecord(recordId);
-      
+
       if (!record) {
         return res.status(404).json({ message: "Record not found" });
       }
-      
+
       // Check if user has access to this record
       if (record.userId !== req.session.userId) {
         return res.status(403).json({ message: "Access denied" });
       }
-      
+
       await storage.deleteMedicalRecord(recordId);
       res.json({ message: "Record deleted successfully" });
     } catch (error) {
@@ -323,21 +316,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const recordId = parseInt(req.params.id);
       const record = await storage.getMedicalRecord(recordId);
-      
+
       if (!record) {
         return res.status(404).json({ message: "Record not found" });
       }
-      
+
       // Check if user has access to this record
       if (record.userId !== req.session.userId) {
         return res.status(403).json({ message: "Access denied" });
       }
-      
+
       // Return existing summary if available
       if (record.aiSummary) {
         return res.json({ summary: record.aiSummary });
       }
-      
+
       // For now, return empty. In a real app, this would trigger summary generation
       res.json({ summary: null });
     } catch (error) {
@@ -353,11 +346,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const recordId = parseInt(req.params.id);
       const record = await storage.getMedicalRecord(recordId);
-      
+
       if (!record) {
         return res.status(404).json({ message: "Record not found" });
       }
-      
+
       // Check if user has access to this record
       if (record.userId !== req.session.userId) {
         return res.status(403).json({ message: "Access denied" });
@@ -365,15 +358,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Sample document text (in a real app, we'd extract text from the actual document)
       const documentText = "Patient shows normal blood pressure at 120/80 mmHg. Cholesterol levels are within normal range. Patient reports occasional headaches which may be related to stress or eyestrain. Recommended follow-up in 6 months.";
-      
+
       // Generate summary using OpenAI
       const summary = await summarizeText(documentText);
-      
+
       // Update record with summary
       const updatedRecord = await storage.updateMedicalRecord(recordId, {
         aiSummary: summary
       });
-      
+
       res.json({ success: true, summary: updatedRecord.aiSummary });
     } catch (error) {
       res.status(500).json({ message: "Failed to generate summary", error: error.message });
@@ -389,10 +382,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const timeRange = req.query.timeRange || "3m";
       const metrics = await storage.getHealthMetricsByUserId(req.session.userId);
-      
+
       // Sample data for demonstration
       const today = new Date();
-      
+
       // Blood pressure data
       const bloodPressureData = Array.from({ length: 10 }).map((_, i) => {
         const date = new Date();
@@ -403,7 +396,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           diastolic: Math.floor(Math.random() * 10) + 75
         };
       }).reverse();
-      
+
       // Blood sugar data
       const bloodSugarData = Array.from({ length: 10 }).map((_, i) => {
         const date = new Date();
@@ -413,7 +406,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           value: Math.floor(Math.random() * 15) + 95
         };
       }).reverse();
-      
+
       // Weight data
       const weightData = Array.from({ length: 10 }).map((_, i) => {
         const date = new Date();
@@ -425,7 +418,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           bmi: parseFloat((weight / (1.75 * 1.75) * 0.45359237).toFixed(1))
         };
       }).reverse();
-      
+
       const analyticsData = {
         bloodPressure: {
           latest: "128/82",
@@ -443,7 +436,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           data: weightData
         }
       };
-      
+
       res.json(analyticsData);
     } catch (error) {
       res.status(500).json({ message: "Failed to get health metrics", error: error.message });
@@ -458,7 +451,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const { metricType, value, unit, recordedAt, notes } = req.body;
-      
+
       const newMetric = await storage.createHealthMetric({
         userId,
         metricType,
@@ -467,7 +460,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         recordedAt: new Date(recordedAt).toISOString(),
         notes: notes || ""
       });
-      
+
       res.status(201).json(newMetric);
     } catch (error) {
       res.status(500).json({ message: "Failed to create health metric", error: error.message });
@@ -495,14 +488,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const allAppointments = await storage.getAppointmentsByUserId(req.session.userId);
-      
+
       // Filter for upcoming appointments
       const now = new Date();
       const upcomingAppointments = allAppointments
         .filter(app => new Date(app.appointmentDate) > now)
         .sort((a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime())
         .slice(0, 3); // Limit to 3 upcoming appointments
-      
+
       res.json(upcomingAppointments);
     } catch (error) {
       res.status(500).json({ message: "Failed to get upcoming appointments", error: error.message });
@@ -529,7 +522,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         reminderTime,
         notes
       } = req.body;
-      
+
       const newAppointment = await storage.createAppointment({
         userId,
         title,
@@ -544,7 +537,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         reminderTime,
         notes: notes || ""
       });
-      
+
       res.status(201).json(newAppointment);
     } catch (error) {
       res.status(500).json({ message: "Failed to create appointment", error: error.message });
@@ -559,18 +552,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const appointmentId = parseInt(req.params.id);
       const { status } = req.body;
-      
+
       const appointment = await storage.getAppointment(appointmentId);
-      
+
       if (!appointment) {
         return res.status(404).json({ message: "Appointment not found" });
       }
-      
+
       // Check if user has access to this appointment
       if (appointment.userId !== req.session.userId) {
         return res.status(403).json({ message: "Access denied" });
       }
-      
+
       const updatedAppointment = await storage.updateAppointment(appointmentId, { status });
       res.json(updatedAppointment);
     } catch (error) {
@@ -608,7 +601,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         allergies,
         chronicConditions
       } = req.body;
-      
+
       const newFamilyMember = await storage.createFamilyMember({
         userId,
         name,
@@ -619,7 +612,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         allergies: allergies || null,
         chronicConditions: chronicConditions || null
       });
-      
+
       res.status(201).json(newFamilyMember);
     } catch (error) {
       res.status(500).json({ message: "Failed to create family member", error: error.message });
@@ -634,16 +627,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const memberId = parseInt(req.params.id);
       const member = await storage.getFamilyMember(memberId);
-      
+
       if (!member) {
         return res.status(404).json({ message: "Family member not found" });
       }
-      
+
       // Check if user has access to this family member
       if (member.userId !== req.session.userId) {
         return res.status(403).json({ message: "Access denied" });
       }
-      
+
       const updatedMember = await storage.updateFamilyMember(memberId, req.body);
       res.json(updatedMember);
     } catch (error) {
@@ -659,16 +652,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const memberId = parseInt(req.params.id);
       const member = await storage.getFamilyMember(memberId);
-      
+
       if (!member) {
         return res.status(404).json({ message: "Family member not found" });
       }
-      
+
       // Check if user has access to this family member
       if (member.userId !== req.session.userId) {
         return res.status(403).json({ message: "Access denied" });
       }
-      
+
       await storage.deleteFamilyMember(memberId);
       res.json({ message: "Family member deleted successfully" });
     } catch (error) {
@@ -698,15 +691,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const { message } = req.body;
-      
+
+      console.log("Received message from client:", message);
+
       // Get user's health context for personalized responses
       const user = await storage.getUser(userId);
       const medicalRecords = await storage.getMedicalRecordsByUserId(userId);
       const healthMetrics = await storage.getHealthMetricsByUserId(userId);
-      
+
       // Process message with OpenAI
       let aiResponse = "I don't have enough information to answer that question specifically. However, I can provide general health information or answer questions about medical terminology.";
-      
+
       // Try to generate a response based on context
       try {
         aiResponse = await generateHealthResponse(message, user, medicalRecords, healthMetrics);
@@ -714,14 +709,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("Error generating AI response:", error);
         // Fall back to default response if AI fails
       }
-      
+
       // Save chat history
       const chatEntry = await storage.createAiChatHistory({
         userId,
         message,
         response: aiResponse
       });
-      
+
       res.json(chatEntry);
     } catch (error) {
       res.status(500).json({ message: "Failed to process message", error: error.message });
@@ -736,19 +731,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const userId = req.session.userId;
-      
+
       // Get user information and medical records
       const user = await storage.getUser(userId);
       const medicalRecords = await storage.getMedicalRecordsByUserId(userId);
       const healthMetrics = await storage.getHealthMetricsByUserId(userId);
-      
+
       if (!user || medicalRecords.length === 0) {
-        return res.json({ 
+        return res.json({
           summary: null,
           lastUpdated: null
         });
       }
-      
+
       // Generate a context for the AI to summarize
       const context = {
         user: {
@@ -769,10 +764,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             summary: record.aiSummary || "No summary available"
           }))
       };
-      
+
       // Generate summary
       const summary = await generateHealthSummary(context);
-      
+
       res.json({
         summary,
         lastUpdated: new Date().toISOString()
@@ -790,7 +785,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const userId = req.session.userId;
-      
+
       // Create a QR code URL for emergency access
       // This would normally generate a secure token and store it
       const qrData = {
@@ -798,7 +793,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId,
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
       };
-      
+
       res.json(qrData);
     } catch (error) {
       res.status(500).json({ message: "Failed to generate QR code", error: error.message });
@@ -806,11 +801,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
-  
+
   // Initialize the SmartWatch WebSocket service
   smartWatchService.initialize(httpServer);
   console.log('SmartWatch integration initialized');
-  
+
   return httpServer;
 }
 
@@ -820,31 +815,12 @@ function calculateAge(dateOfBirth: string): number {
   const birthDate = new Date(dateOfBirth);
   let age = today.getFullYear() - birthDate.getFullYear();
   const monthDiff = today.getMonth() - birthDate.getMonth();
-  
+
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
     age--;
   }
-  
+
   return age;
 }
 
-async function generateHealthResponse(
-  message: string, 
-  user: any, 
-  medicalRecords: any[], 
-  healthMetrics: any[]
-): Promise<string> {
-  // This is a simplified version of what would be a more complex function
-  // In a real app, we'd analyze the message, gather relevant context, and generate a response
-
-  let response = "I don't have enough information to answer that question specifically. However, I can provide general health information or answer questions about medical terminology.";
-
-  try {
-    // Use summarizeText as a placeholder for a more context-aware function
-    response = await summarizeText(`Question: ${message}\nContext: This is a question from a patient with the following profile: ${user.fullName}, Allergies: ${user.allergies || 'None recorded'}, Chronic conditions: ${user.chronicConditions || 'None recorded'}`);
-  } catch (error) {
-    console.error("Error generating health response:", error);
-  }
-
-  return response;
-}
+// Function removed - using the one from openai.ts instead
