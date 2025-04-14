@@ -4,6 +4,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import path from "path";
+import { initializeDatabase, createDefaultUserIfNeeded } from "./dbInit";
 
 // Fix __dirname for ES module scope
 const __filename = fileURLToPath(import.meta.url);
@@ -49,6 +50,12 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Initialize the database before starting the server
+  await initializeDatabase();
+
+  // Create default user if needed
+  await createDefaultUserIfNeeded();
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
