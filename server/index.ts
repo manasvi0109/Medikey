@@ -75,11 +75,8 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Initialize the database before starting the server
-  await initializeDatabase();
-
-  // Create default user if needed
-  await createDefaultUserIfNeeded();
+  // Skip database initialization for now
+  console.log('Skipping database initialization for simplified deployment');
 
   const server = await registerRoutes(app);
 

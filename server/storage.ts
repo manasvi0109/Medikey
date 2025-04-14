@@ -541,8 +541,7 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-// Use DatabaseStorage in production and MemStorage for local development
-const isProd = process.env.NODE_ENV === 'production';
-export const storage = isProd ? new DatabaseStorage() : new MemStorage();
+// Use MemStorage for now to simplify deployment
+export const storage = new MemStorage();
 
-console.log(`Using ${isProd ? 'DatabaseStorage' : 'MemStorage'} for data storage`);
+console.log(`Using MemStorage for data storage`);
