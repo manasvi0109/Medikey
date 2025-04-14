@@ -23,5 +23,24 @@ if (!process.env.DATABASE_URL) {
   process.env.DATABASE_URL = "postgres://dummy:dummy@localhost:5432/dummy";
 }
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-export const db = drizzle(pool, { schema });
+console.log("Connecting to database...");
+let pool;
+let db;
+
+try {
+  pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+  // Test the connection
+  pool.on('error', (err) => {
+    console.error('Unexpected error on idle client', err);
+    process.exit(-1);
+  });
+
+  db = drizzle(pool, { schema });
+  console.log("Database connection established successfully");
+} catch (error) {
+  console.error("Failed to connect to database:", error);
+  throw error;
+}
+
+export { pool, db };

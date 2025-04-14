@@ -4,7 +4,7 @@ import * as schema from '@shared/schema';
 
 export async function initializeDatabase() {
   console.log('Initializing database...');
-  
+
   try {
     // Create tables if they don't exist
     await createUsersTable();
@@ -15,7 +15,7 @@ export async function initializeDatabase() {
     await createMedicalSummaryTable();
     await createAiChatHistoryTable();
     await createSmartWatchDevicesTable();
-    
+
     console.log('Database initialization completed successfully');
     return true;
   } catch (error) {
@@ -63,11 +63,13 @@ async function createMedicalRecordsTable() {
         record_date TIMESTAMP NOT NULL,
         record_type TEXT NOT NULL,
         provider TEXT,
-        file_path TEXT,
+        provider_type TEXT,
+        file_content TEXT,
         file_name TEXT,
         file_size INTEGER,
         file_type TEXT,
         tags TEXT[],
+        ai_summary TEXT,
         created_at TIMESTAMP DEFAULT NOW()
       )
     `);
@@ -85,12 +87,17 @@ async function createAppointmentsTable() {
         id SERIAL PRIMARY KEY,
         user_id INTEGER NOT NULL REFERENCES users(id),
         title TEXT NOT NULL,
-        doctor_name TEXT,
+        description TEXT,
+        appointment_type TEXT NOT NULL,
+        provider_name TEXT NOT NULL,
+        provider_type TEXT,
         location TEXT,
-        appointment_type TEXT,
-        date TIMESTAMP NOT NULL,
-        notes TEXT,
+        appointment_date TIMESTAMP NOT NULL,
+        duration INTEGER,
+        reminder_set BOOLEAN DEFAULT FALSE,
+        reminder_time TIMESTAMP,
         status TEXT DEFAULT 'scheduled',
+        notes TEXT,
         created_at TIMESTAMP DEFAULT NOW()
       )
     `);
@@ -114,6 +121,7 @@ async function createFamilyMembersTable() {
         blood_type TEXT,
         allergies TEXT,
         chronic_conditions TEXT,
+        avatar_url TEXT,
         notes TEXT,
         created_at TIMESTAMP DEFAULT NOW()
       )
@@ -132,8 +140,11 @@ async function createHealthMetricsTable() {
         id SERIAL PRIMARY KEY,
         user_id INTEGER NOT NULL REFERENCES users(id),
         metric_type TEXT NOT NULL,
-        value JSONB NOT NULL,
-        recorded_at TIMESTAMP DEFAULT NOW()
+        value TEXT NOT NULL,
+        unit TEXT NOT NULL,
+        recorded_at TIMESTAMP NOT NULL,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT NOW()
       )
     `);
     console.log('Health metrics table created or already exists');
@@ -205,13 +216,13 @@ export async function createDefaultUserIfNeeded() {
     const existingUsers = await db.query.users.findMany({
       limit: 1
     });
-    
+
     if (existingUsers.length === 0) {
       console.log('No users found, creating default user...');
-      
+
       // Hash for password "password123"
       const hashedPassword = '$2b$10$3euPcmQFCiblsZeEu5s7p.9MQICjYJ7ogs/D3Q1vIwLRrJfQ7mNZS';
-      
+
       await db.insert(schema.users).values({
         username: 'manasvi',
         password: hashedPassword,
@@ -221,7 +232,7 @@ export async function createDefaultUserIfNeeded() {
         gender: 'Male',
         bloodType: 'O+',
       });
-      
+
       console.log('Default user created successfully');
     } else {
       console.log('Users already exist, skipping default user creation');
