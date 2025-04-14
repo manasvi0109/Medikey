@@ -1,6 +1,6 @@
-# MediVault - Healthcare Management System
+# MediKey - Healthcare Management System
 
-MediVault is a comprehensive healthcare management system that allows users to store and manage their medical records, track health metrics, schedule appointments, and communicate with healthcare providers.
+MediKey is a comprehensive healthcare management system that allows users to store and manage their medical records, track health metrics, schedule appointments, and communicate with healthcare providers.
 
 ## Features
 

@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: medivault
+    name: medikey
     env: node
     buildCommand: npm install && npm run build
     startCommand: npm start
