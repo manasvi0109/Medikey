@@ -58,15 +58,15 @@ https://github.com/manasvi0109/medikey
    - `OPENAI_API_KEY`: [Your OpenAI API key]
 8. Click "Create Web Service"
 
-#### 2.4. Initialize the Database
+#### 2.4. Database Initialization
+
+The application will automatically initialize the database on startup. You don't need to run any additional commands.
 
 1. Wait for the initial deployment to complete
-2. Go to the "Shell" tab in your Web Service
-3. Run the following command to initialize your database:
-   ```
-   npm run db:push
-   ```
-4. Wait for the command to complete
+2. The database tables will be created automatically
+3. A default user will be created with the following credentials:
+   - Username: manasvi
+   - Password: password123
 
 #### 2.5. Access Your Application
 
