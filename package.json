@@ -12,6 +12,7 @@
     "db:push": "drizzle-kit push",
     "predeploy": "npm run build:frontend",
     "deploy": "gh-pages -d dist/public",
+    "homepage": "https://manasvi0109.github.io/medikey/",
     "vercel-build": "npm run build"
   },
   "dependencies": {

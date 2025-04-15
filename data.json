@@ -4,7 +4,7 @@
   "metricIdCounter": 1,
   "appointmentIdCounter": 1,
   "memberIdCounter": 1,
-  "chatIdCounter": 4,
+  "chatIdCounter": 7,
   "users": {
     "1": {
       "username": "demo",
@@ -59,6 +59,27 @@
       "response": "You have a history of asthma diagnosed in 2005, currently managed with an Albuterol inhaler as needed. Your last severe exacerbation was in 2019 due to a respiratory infection. It's important to keep your inhaler with you at all times, avoid known triggers, and maintain regular follow-ups with your pulmonologist, Dr. Mark Williams.",
       "id": 3,
       "createdAt": "2025-04-15T12:43:42.891Z"
+    },
+    "4": {
+      "userId": 2,
+      "message": "blood pressure",
+      "response": "Your most recent blood pressure reading was 128/82 mmHg, which is slightly elevated but has shown improvement from previous readings. Continue monitoring your blood pressure regularly and maintain your current medication regimen. Lifestyle factors like reducing sodium intake, regular exercise, and stress management can help improve your blood pressure.",
+      "id": 4,
+      "createdAt": "2025-04-15T15:58:29.446Z"
+    },
+    "5": {
+      "userId": 2,
+      "message": "What are the side effects of Lisinopril?",
+      "response": "I can help answer questions about your health records, medications, or upcoming appointments. Try asking about specific health concerns like 'Tell me about my blood pressure' or 'What medications am I taking?' Please note that I'm not a replacement for professional medical advice, and you should always consult your healthcare provider for medical decisions.",
+      "id": 5,
+      "createdAt": "2025-04-15T15:58:33.241Z"
+    },
+    "6": {
+      "userId": 2,
+      "message": "Explain what high cholesterol means",
+      "response": "Your recent cholesterol levels are within normal range, though there is a slight elevation in LDL (135 mg/dL). Your doctor recommends maintaining a heart-healthy diet low in saturated fats and regular exercise to help manage these levels naturally.",
+      "id": 6,
+      "createdAt": "2025-04-15T15:58:36.600Z"
     }
   }
 }
