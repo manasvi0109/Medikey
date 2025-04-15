@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 
 // Load .env from root directory
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
-console.log("DATABASE_URL from .env:", process.env.DATABASE_URL);
+console.log("Environment:", process.env.NODE_ENV);
 
 
 const app = express();
@@ -75,8 +75,14 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Skip database initialization for now
-  console.log('Skipping database initialization for simplified deployment');
+  // Initialize the database
+  try {
+    await initializeDatabase();
+    await createDefaultUserIfNeeded();
+    console.log('Database initialized successfully');
+  } catch (error) {
+    console.error('Error initializing database:', error);
+  }
 
   const server = await registerRoutes(app);
 

@@ -1,11 +1,23 @@
+"use client";
+
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle, QrCode, Shield, Clock } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { QRCodeSVG } from "react-qr-code";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
+import QRCodeSVG from "react-qr-code"; // ✅ fixed import
 import { useAuth } from "@/hooks/useAuth";
 import { getEmergencyAccessQR } from "@/lib/api";
 import { EmergencyQRCode } from "@/lib/types";
@@ -15,93 +27,89 @@ export default function Emergency() {
   const [showQrCode, setShowQrCode] = useState(false);
 
   const { data: qrCode, isLoading: qrLoading } = useQuery<EmergencyQRCode>({
-    queryKey: ["/api/emergency/qr-code"],
+    queryKey: ["emergency-qr-code"],
     queryFn: getEmergencyAccessQR,
   });
 
   const { data: userProfile, isLoading: profileLoading } = useQuery({
-    queryKey: ["/api/users/profile"],
+    queryKey: ["user-profile"],
+    queryFn: async () => {
+      const res = await fetch("/api/users/profile");
+      if (!res.ok) throw new Error("Failed to fetch user profile");
+      return res.json();
+    }
   });
 
   const isLoading = qrLoading || profileLoading;
+
+  const qrValue =
+    qrCode?.url || `${typeof window !== "undefined" ? window.location.origin : ""}/emergency/${user?.id || "user"}`;
 
   return (
     <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Emergency Access</h1>
-          <p className="mt-1 text-sm text-gray-600">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+            Emergency Access
+          </h1>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
             Critical health information for emergency situations
           </p>
         </div>
       </div>
 
-      {/* Emergency Alert Banner */}
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex items-start">
-        <AlertTriangle className="h-5 w-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" />
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex items-start dark:bg-red-100">
+        <AlertTriangle className="h-5 w-5 text-red-500 mr-3 mt-0.5" />
         <div>
           <h3 className="text-sm font-medium text-red-800">Important Information</h3>
           <p className="mt-1 text-sm text-red-700">
-            This page provides access to your critical medical information for emergency situations. 
             Share the QR code only with emergency healthcare providers.
           </p>
         </div>
       </div>
 
-      {/* Emergency QR Code Card */}
-      <Card className="mb-6 bg-white rounded-lg shadow overflow-hidden">
-        <CardHeader className="bg-red-50 border-b border-red-100">
-          <CardTitle className="text-lg font-medium text-red-800 flex items-center">
+      {/* QR Code Card */}
+      <Card className="mb-6">
+        <CardHeader className="bg-red-50">
+          <CardTitle className="text-red-800 flex items-center">
             <Shield className="h-5 w-5 mr-2 text-red-600" />
-            Emergency Access QR Code
+            Emergency QR Code
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           {isLoading ? (
             <div className="flex flex-col items-center space-y-4">
-              <Skeleton className="h-48 w-48 rounded-md" />
+              <Skeleton className="h-48 w-48" />
               <Skeleton className="h-4 w-64" />
               <Skeleton className="h-4 w-48" />
             </div>
           ) : (
             <div className="flex flex-col items-center">
-              <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-sm">
-                <QRCodeSVG 
-                  value={qrCode?.url || `https://medikey.app/emergency/${user?.id || "user"}`} 
-                  size={200}
-                  level="H"
-                />
+              <div className="bg-white p-4 border border-gray-200 rounded-lg">
+                {qrValue ? <QRCodeSVG value={qrValue} size={200} /> : <p>Generating QR Code...</p>}
               </div>
-              <div className="mt-4 text-center">
-                <p className="text-sm text-gray-600 mb-2">
-                  Scan this code to access critical medical information in case of emergency.
-                </p>
-                <div className="flex items-center justify-center bg-red-50 p-3 rounded-md">
-                  <Clock className="h-5 w-5 text-red-500 mr-2" />
-                  <p className="text-xs text-red-600">
-                    This QR code expires in 24 hours for security.
-                  </p>
-                </div>
-                <Button 
-                  className="mt-4" 
-                  variant="outline"
-                  onClick={() => setShowQrCode(true)}
-                >
-                  <QrCode className="mr-2 h-4 w-4" />
-                  View Full Screen
-                </Button>
+              <p className="text-sm mt-4 text-gray-600 text-center">
+                Scan this QR code to access medical data in emergencies.
+              </p>
+              <div className="flex items-center justify-center bg-red-50 p-3 rounded-md mt-2">
+                <Clock className="h-5 w-5 text-red-500 mr-2" />
+                <p className="text-xs text-red-600">QR code expires in 24 hours.</p>
               </div>
+              <Button className="mt-4" variant="outline" onClick={() => setShowQrCode(true)}>
+                <QrCode className="mr-2 h-4 w-4" />
+                View Full Screen
+              </Button>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Emergency Information Card */}
-      <Card className="mb-6 bg-white rounded-lg shadow overflow-hidden">
-        <CardHeader className="bg-red-50 border-b border-red-100">
-          <CardTitle className="text-lg font-medium text-red-800 flex items-center">
+      {/* Personal + Medical Info */}
+      <Card className="mb-6">
+        <CardHeader className="bg-red-50">
+          <CardTitle className="text-red-800 flex items-center">
             <AlertTriangle className="h-5 w-5 mr-2 text-red-600" />
-            Critical Medical Information
+            Critical Medical Info
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
@@ -109,55 +117,31 @@ export default function Emergency() {
             <div className="space-y-4">
               <Skeleton className="h-8 w-full" />
               <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-24 w-full" />
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Personal Info */}
               <div>
-                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Personal Information</h3>
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <div className="mb-3">
-                    <span className="text-xs text-gray-500 block">Full Name</span>
-                    <span className="text-base font-medium">{userProfile?.fullName}</span>
-                  </div>
-                  <div className="mb-3">
-                    <span className="text-xs text-gray-500 block">Date of Birth</span>
-                    <span className="text-base">{userProfile?.dateOfBirth || "Not specified"}</span>
-                  </div>
-                  <div className="mb-3">
-                    <span className="text-xs text-gray-500 block">Gender</span>
-                    <span className="text-base">{userProfile?.gender || "Not specified"}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs text-gray-500 block">Blood Type</span>
-                    <span className="text-lg font-semibold text-red-600">{userProfile?.bloodType || "Not specified"}</span>
-                  </div>
+                <h3 className="text-sm text-gray-500 uppercase mb-2">Personal Information</h3>
+                <div className="bg-gray-50 p-4 rounded-md space-y-1">
+                  <p><strong>Full Name:</strong> {userProfile?.fullName || "Not available"}</p>
+                  <p><strong>Date of Birth:</strong> {userProfile?.dateOfBirth || "Not specified"}</p>
+                  <p><strong>Gender:</strong> {userProfile?.gender || "Not specified"}</p>
+                  <p><strong>Blood Type:</strong> <span className="text-red-600 font-semibold">{userProfile?.bloodType || "Not specified"}</span></p>
                 </div>
               </div>
 
+              {/* Medical Info */}
               <div>
-                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Medical Information</h3>
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <div className="mb-3">
-                    <span className="text-xs text-gray-500 block">Allergies</span>
-                    <span className="text-base">{userProfile?.allergies || "None recorded"}</span>
-                  </div>
-                  <div className="mb-3">
-                    <span className="text-xs text-gray-500 block">Chronic Conditions</span>
-                    <span className="text-base">{userProfile?.chronicConditions || "None recorded"}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs text-gray-500 block">Emergency Contact</span>
-                    {userProfile?.emergencyContactName ? (
-                      <div>
-                        <span className="text-base">{userProfile.emergencyContactName}</span>
-                        <br />
-                        <span className="text-base">{userProfile.emergencyContactPhone}</span>
-                      </div>
-                    ) : (
-                      <span className="text-base">Not specified</span>
-                    )}
-                  </div>
+                <h3 className="text-sm text-gray-500 uppercase mb-2">Medical Information</h3>
+                <div className="bg-gray-50 p-4 rounded-md space-y-1">
+                  <p><strong>Allergies:</strong> {userProfile?.allergies || "None"}</p>
+                  <p><strong>Chronic Conditions:</strong> {userProfile?.chronicConditions || "None"}</p>
+                  <p><strong>Emergency Contact:</strong><br />
+                    {userProfile?.emergencyContactName
+                      ? `${userProfile.emergencyContactName} (${userProfile.emergencyContactPhone})`
+                      : "Not provided"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -171,25 +155,11 @@ export default function Emergency() {
           <DialogHeader>
             <DialogTitle>Emergency Access QR Code</DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col items-center justify-center p-4">
-            <div className="bg-white p-4 rounded-lg">
-              <QRCodeSVG 
-                value={qrCode?.url || `https://medikey.app/emergency/${user?.id || "user"}`} 
-                size={300}
-                level="H"
-              />
-            </div>
-            <div className="mt-4 text-center">
-              <p className="text-sm text-gray-600 mb-2">
-                Scan this code to access critical medical information in case of emergency.
-              </p>
-              <div className="flex items-center justify-center bg-red-50 p-3 rounded-md">
-                <AlertTriangle className="h-5 w-5 text-red-500 mr-2" />
-                <p className="text-xs text-red-600">
-                  Only share with emergency healthcare providers.
-                </p>
-              </div>
-            </div>
+          <div className="flex flex-col items-center p-4">
+            {qrValue ? <QRCodeSVG value={qrValue} size={300} /> : <p>Generating QR Code...</p>}
+            <p className="text-sm mt-4 text-gray-600 text-center">
+              Only share with emergency healthcare providers.
+            </p>
           </div>
         </DialogContent>
       </Dialog>

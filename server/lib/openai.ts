@@ -6,8 +6,8 @@ const OPENAI_MODEL = "gpt-4o";
 // Check if we have a valid API key
 const hasValidApiKey = !!process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith('sk-');
 
-// Force fallback mode for demo purposes (remove this line to use real OpenAI API)
-const forceFallbackMode = true;
+// Force fallback mode only in development
+const forceFallbackMode = process.env.NODE_ENV !== 'production';
 
 // Initialize OpenAI client if we have a valid API key and not in forced fallback mode
 export const openai = (hasValidApiKey && !forceFallbackMode)

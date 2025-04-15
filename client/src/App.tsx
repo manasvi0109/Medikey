@@ -7,6 +7,9 @@ import Sidebar from "@/components/layout/Sidebar";
 import MobileMenu from "@/components/layout/MobileMenu";
 import { useAuth } from "@/hooks/useAuth";
 
+// Lazy load the mobile access page
+const MobileAccess = lazy(() => import("@/pages/mobile-access"));
+
 // Lazy load pages for better performance
 const Dashboard = lazy(() => import("@/pages/dashboard"));
 const Records = lazy(() => import("@/pages/records"));
@@ -15,6 +18,7 @@ const Family = lazy(() => import("@/pages/family"));
 const Appointments = lazy(() => import("@/pages/appointments"));
 const Assistant = lazy(() => import("@/pages/assistant"));
 const Emergency = lazy(() => import("@/pages/emergency"));
+const Profile = lazy(() => import("@/pages/profile"));
 
 function LoadingFallback() {
   return (
@@ -56,6 +60,13 @@ function App() {
       {/* Public routes */}
       <Route path={`${basePath}/login`} component={Login} />
       <Route path={`${basePath}/register`} component={Register} />
+      <Route path={`${basePath}/mobile-access`}>
+        {() => (
+          <Suspense fallback={<LoadingFallback />}>
+            <MobileAccess />
+          </Suspense>
+        )}
+      </Route>
 
       {/* Protected routes */}
       {isAuthenticated ? (
@@ -113,6 +124,13 @@ function App() {
             {() => (
               <AuthenticatedLayout>
                 <Emergency />
+              </AuthenticatedLayout>
+            )}
+          </Route>
+          <Route path={`${basePath}/profile`}>
+            {() => (
+              <AuthenticatedLayout>
+                <Profile />
               </AuthenticatedLayout>
             )}
           </Route>

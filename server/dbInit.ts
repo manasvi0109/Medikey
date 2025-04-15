@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { db } from './db';
+import { db, sqlite } from './db';
 import * as schema from '@shared/schema';
 
 export async function initializeDatabase() {
@@ -26,9 +26,9 @@ export async function initializeDatabase() {
 
 async function createUsersTable() {
   try {
-    await db.execute(sql`
+    sqlite.exec(`
       CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL,
         full_name TEXT NOT NULL,
@@ -42,7 +42,7 @@ async function createUsersTable() {
         emergency_contact_name TEXT,
         emergency_contact_phone TEXT,
         avatar_url TEXT,
-        created_at TIMESTAMP DEFAULT NOW()
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
     console.log('Users table created or already exists');
@@ -54,10 +54,10 @@ async function createUsersTable() {
 
 async function createMedicalRecordsTable() {
   try {
-    await db.execute(sql`
+    sqlite.exec(`
       CREATE TABLE IF NOT EXISTS medical_records (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER NOT NULL REFERENCES users(id),
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
         title TEXT NOT NULL,
         description TEXT,
         record_date TIMESTAMP NOT NULL,
@@ -68,9 +68,10 @@ async function createMedicalRecordsTable() {
         file_name TEXT,
         file_size INTEGER,
         file_type TEXT,
-        tags TEXT[],
+        tags TEXT,
         ai_summary TEXT,
-        created_at TIMESTAMP DEFAULT NOW()
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
       )
     `);
     console.log('Medical records table created or already exists');
@@ -82,10 +83,10 @@ async function createMedicalRecordsTable() {
 
 async function createAppointmentsTable() {
   try {
-    await db.execute(sql`
+    sqlite.exec(`
       CREATE TABLE IF NOT EXISTS appointments (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER NOT NULL REFERENCES users(id),
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
         title TEXT NOT NULL,
         description TEXT,
         appointment_type TEXT NOT NULL,
@@ -94,11 +95,12 @@ async function createAppointmentsTable() {
         location TEXT,
         appointment_date TIMESTAMP NOT NULL,
         duration INTEGER,
-        reminder_set BOOLEAN DEFAULT FALSE,
+        reminder_set BOOLEAN DEFAULT 0,
         reminder_time TIMESTAMP,
         status TEXT DEFAULT 'scheduled',
         notes TEXT,
-        created_at TIMESTAMP DEFAULT NOW()
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
       )
     `);
     console.log('Appointments table created or already exists');
@@ -110,10 +112,10 @@ async function createAppointmentsTable() {
 
 async function createFamilyMembersTable() {
   try {
-    await db.execute(sql`
+    sqlite.exec(`
       CREATE TABLE IF NOT EXISTS family_members (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER NOT NULL REFERENCES users(id),
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
         name TEXT NOT NULL,
         relationship TEXT NOT NULL,
         date_of_birth TEXT,
@@ -123,7 +125,8 @@ async function createFamilyMembersTable() {
         chronic_conditions TEXT,
         avatar_url TEXT,
         notes TEXT,
-        created_at TIMESTAMP DEFAULT NOW()
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
       )
     `);
     console.log('Family members table created or already exists');
@@ -135,16 +138,17 @@ async function createFamilyMembersTable() {
 
 async function createHealthMetricsTable() {
   try {
-    await db.execute(sql`
+    sqlite.exec(`
       CREATE TABLE IF NOT EXISTS health_metrics (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER NOT NULL REFERENCES users(id),
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
         metric_type TEXT NOT NULL,
         value TEXT NOT NULL,
         unit TEXT NOT NULL,
         recorded_at TIMESTAMP NOT NULL,
         notes TEXT,
-        created_at TIMESTAMP DEFAULT NOW()
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
       )
     `);
     console.log('Health metrics table created or already exists');
@@ -156,12 +160,13 @@ async function createHealthMetricsTable() {
 
 async function createMedicalSummaryTable() {
   try {
-    await db.execute(sql`
+    sqlite.exec(`
       CREATE TABLE IF NOT EXISTS medical_summary (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER NOT NULL REFERENCES users(id) UNIQUE,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL UNIQUE,
         summary TEXT,
-        last_updated TIMESTAMP DEFAULT NOW()
+        last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
       )
     `);
     console.log('Medical summary table created or already exists');
@@ -173,13 +178,14 @@ async function createMedicalSummaryTable() {
 
 async function createAiChatHistoryTable() {
   try {
-    await db.execute(sql`
+    sqlite.exec(`
       CREATE TABLE IF NOT EXISTS ai_chat_history (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER NOT NULL REFERENCES users(id),
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
         message TEXT NOT NULL,
         response TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT NOW()
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
       )
     `);
     console.log('AI chat history table created or already exists');
@@ -191,16 +197,17 @@ async function createAiChatHistoryTable() {
 
 async function createSmartWatchDevicesTable() {
   try {
-    await db.execute(sql`
+    sqlite.exec(`
       CREATE TABLE IF NOT EXISTS smartwatch_devices (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER NOT NULL REFERENCES users(id),
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
         device_name TEXT NOT NULL,
         device_id TEXT NOT NULL,
         device_type TEXT NOT NULL,
-        connected_at TIMESTAMP DEFAULT NOW(),
+        connected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         last_sync TIMESTAMP,
-        status TEXT DEFAULT 'active'
+        status TEXT DEFAULT 'active',
+        FOREIGN KEY (user_id) REFERENCES users(id)
       )
     `);
     console.log('Smartwatch devices table created or already exists');

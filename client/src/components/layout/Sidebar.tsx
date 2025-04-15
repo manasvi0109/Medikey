@@ -4,16 +4,17 @@ import { MediKeyLogo } from "@/assets/icons/MediKeyLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { 
-  LayoutDashboard, 
-  FolderClosed, 
-  BarChart2, 
-  Users, 
-  Calendar, 
+import {
+  LayoutDashboard,
+  FolderClosed,
+  BarChart2,
+  Users,
+  Calendar,
   Bot,
   AlertTriangle,
   Settings,
-  LogOut
+  LogOut,
+  Smartphone
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -62,7 +63,7 @@ export default function Sidebar() {
           <span className="ml-2 text-lg font-semibold text-gray-800">MediKey</span>
         </div>
       </div>
-      
+
       {/* Navigation */}
       <nav className="flex-1 px-2 py-4 overflow-y-auto">
         <div className="space-y-1">
@@ -89,23 +90,38 @@ export default function Sidebar() {
             </Link>
           ))}
         </div>
-        
+
         <div className="mt-8">
-          <h3 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          <h3 className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
             Emergency Access
           </h3>
-          <div className="mt-2 bg-red-50 rounded-md p-3">
+          <div className="mt-2 bg-red-50 dark:bg-red-900/20 rounded-md p-3">
             <Link href="/emergency">
-              <a className="flex items-center text-sm font-medium text-red-600 hover:text-red-700">
-                <AlertTriangle className="mr-3 h-4 w-4 text-red-600" />
+              <a className="flex items-center text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
+                <AlertTriangle className="mr-3 h-4 w-4 text-red-600 dark:text-red-400" />
                 Emergency Mode
               </a>
             </Link>
-            <p className="mt-1 text-xs text-red-500">Instant access to vital information for emergency personnel</p>
+            <p className="mt-1 text-xs text-red-500 dark:text-red-400">Instant access to vital information for emergency personnel</p>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <h3 className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            Mobile Access
+          </h3>
+          <div className="mt-2 bg-primary-50 dark:bg-primary-900/20 rounded-md p-3">
+            <Link href="/mobile-access">
+              <a className="flex items-center text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+                <Smartphone className="mr-3 h-4 w-4 text-primary-600 dark:text-primary-400" />
+                Access on Phone
+              </a>
+            </Link>
+            <p className="mt-1 text-xs text-primary-500 dark:text-primary-400">Scan QR code to use MediKey on your phone</p>
           </div>
         </div>
       </nav>
-      
+
       {/* User Profile */}
       <div className="flex items-center p-4 border-t border-gray-200">
         <Avatar>
@@ -120,9 +136,11 @@ export default function Sidebar() {
             <LogOut className="h-3 w-3 mr-1" /> Sign out
           </Button>
         </div>
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full">
-          <Settings className="h-4 w-4 text-gray-500" />
-        </Button>
+        <Link href="/profile">
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full">
+            <Settings className="h-4 w-4 text-gray-500" />
+          </Button>
+        </Link>
       </div>
     </aside>
   );

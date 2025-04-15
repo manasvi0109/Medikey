@@ -4,7 +4,7 @@
   "metricIdCounter": 1,
   "appointmentIdCounter": 1,
   "memberIdCounter": 1,
-  "chatIdCounter": 3,
+  "chatIdCounter": 4,
   "users": {
     "1": {
       "username": "demo",
@@ -28,7 +28,10 @@
       "fullName": "Manasvi",
       "email": "manasvi010903@gmail.com",
       "id": 2,
-      "createdAt": "2025-04-14T16:09:01.397Z"
+      "createdAt": "2025-04-14T16:09:01.397Z",
+      "phone": "",
+      "dateOfBirth": "",
+      "gender": ""
     }
   },
   "medicalRecords": {},
@@ -49,6 +52,13 @@
       "response": "You have a history of asthma diagnosed in 2005, currently managed with an Albuterol inhaler as needed. Your last severe exacerbation was in 2019 due to a respiratory infection. It's important to keep your inhaler with you at all times, avoid known triggers, and maintain regular follow-ups with your pulmonologist, Dr. Mark Williams.",
       "id": 2,
       "createdAt": "2025-04-14T16:46:09.159Z"
+    },
+    "3": {
+      "userId": 2,
+      "message": "what is asthma ",
+      "response": "You have a history of asthma diagnosed in 2005, currently managed with an Albuterol inhaler as needed. Your last severe exacerbation was in 2019 due to a respiratory infection. It's important to keep your inhaler with you at all times, avoid known triggers, and maintain regular follow-ups with your pulmonologist, Dr. Mark Williams.",
+      "id": 3,
+      "createdAt": "2025-04-15T12:43:42.891Z"
     }
   }
 }

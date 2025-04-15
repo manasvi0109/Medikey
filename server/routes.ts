@@ -789,7 +789,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create a QR code URL for emergency access
       // This would normally generate a secure token and store it
       const qrData = {
-        url: `https://medikey.app/emergency/${userId}`,
+        url: `${req.protocol}://${req.get('host')}/emergency/${userId}`,
         userId,
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
       };

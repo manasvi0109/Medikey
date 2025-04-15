@@ -4,7 +4,7 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development tsx server/index.ts",
+    "dev": "cross-env NODE_ENV=development tsx server/index.ts --host",
     "build": "npx vite build && npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "build:frontend": "npx vite build",
     "start": "cross-env NODE_ENV=production node dist/index.js",
@@ -67,6 +67,7 @@
     "openai": "^4.93.0",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
+    "qrcode.react": "^4.2.0",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",

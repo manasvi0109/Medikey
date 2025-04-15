@@ -5,19 +5,20 @@ import { MediKeyLogo } from "@/assets/icons/MediKeyLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { 
-  LayoutDashboard, 
-  FolderClosed, 
-  BarChart2, 
-  Users, 
-  Calendar, 
+import {
+  LayoutDashboard,
+  FolderClosed,
+  BarChart2,
+  Users,
+  Calendar,
   Bot,
   AlertTriangle,
   Menu,
   X,
   Bell,
   Settings,
-  LogOut
+  LogOut,
+  Smartphone
 } from "lucide-react";
 
 export default function MobileMenu() {
@@ -37,7 +38,7 @@ export default function MobileMenu() {
     } else {
       document.body.style.overflow = "unset";
     }
-    
+
     return () => {
       document.body.style.overflow = "unset";
     };
@@ -82,10 +83,10 @@ export default function MobileMenu() {
       <div className="md:hidden fixed inset-x-0 top-0 bg-white border-b border-gray-200 z-10">
         <div className="flex items-center justify-between h-16 px-4">
           <div className="flex items-center">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="p-1 mr-2 rounded-md" 
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-1 mr-2 rounded-md"
               onClick={() => setIsOpen(true)}
             >
               <Menu className="h-5 w-5 text-gray-600" />
@@ -110,7 +111,7 @@ export default function MobileMenu() {
       </div>
 
       {/* Mobile Menu Overlay */}
-      <div 
+      <div
         className={cn(
           "fixed inset-0 bg-gray-900 bg-opacity-50 z-20 md:hidden transition-opacity",
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
@@ -119,7 +120,7 @@ export default function MobileMenu() {
       />
 
       {/* Mobile Menu */}
-      <div 
+      <div
         className={cn(
           "fixed inset-y-0 left-0 w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out z-30 md:hidden",
           isOpen ? "translate-x-0" : "-translate-x-full"
@@ -131,16 +132,16 @@ export default function MobileMenu() {
               <MediKeyLogo className="h-8 w-8 text-primary-600" />
               <span className="ml-2 text-lg font-semibold text-gray-800">MediKey</span>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               className="p-1 rounded-md"
               onClick={() => setIsOpen(false)}
             >
               <X className="h-5 w-5 text-gray-600" />
             </Button>
           </div>
-          
+
           <nav className="flex-1 px-2 py-4 overflow-y-auto">
             <div className="space-y-1">
               {navItems.map((item) => (
@@ -166,19 +167,34 @@ export default function MobileMenu() {
                 </Link>
               ))}
             </div>
-            
+
             <div className="mt-8">
-              <h3 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <h3 className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Emergency Access
               </h3>
-              <div className="mt-2 bg-red-50 rounded-md p-3">
+              <div className="mt-2 bg-red-50 dark:bg-red-900/20 rounded-md p-3">
                 <Link href="/emergency">
-                  <a className="flex items-center text-sm font-medium text-red-600 hover:text-red-700">
-                    <AlertTriangle className="mr-3 h-4 w-4 text-red-600" />
+                  <a className="flex items-center text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
+                    <AlertTriangle className="mr-3 h-4 w-4 text-red-600 dark:text-red-400" />
                     Emergency Mode
                   </a>
                 </Link>
-                <p className="mt-1 text-xs text-red-500">Instant access to vital information</p>
+                <p className="mt-1 text-xs text-red-500 dark:text-red-400">Instant access to vital information</p>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <h3 className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Mobile Access
+              </h3>
+              <div className="mt-2 bg-primary-50 dark:bg-primary-900/20 rounded-md p-3">
+                <Link href="/mobile-access">
+                  <a className="flex items-center text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+                    <Smartphone className="mr-3 h-4 w-4 text-primary-600 dark:text-primary-400" />
+                    Access on Phone
+                  </a>
+                </Link>
+                <p className="mt-1 text-xs text-primary-500 dark:text-primary-400">Scan QR code to use MediKey on your phone</p>
               </div>
             </div>
 
@@ -195,10 +211,12 @@ export default function MobileMenu() {
                 </div>
               </div>
               <div className="mt-4 flex space-x-2">
-                <Button variant="outline" size="sm" className="flex-1">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Settings
-                </Button>
+                <Link href="/profile">
+                  <Button variant="outline" size="sm" className="flex-1">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Settings
+                  </Button>
+                </Link>
                 <Button variant="outline" size="sm" className="flex-1" onClick={logout}>
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign out

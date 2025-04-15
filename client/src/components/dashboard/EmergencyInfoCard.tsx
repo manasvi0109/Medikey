@@ -5,6 +5,7 @@ import { AlertTriangle, Edit, QrCode } from "lucide-react";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { QRCodeSVG } from "react-qr-code";
+import { Link } from "wouter";
 
 interface EmergencyInfoCardProps {
   userProfile?: User;
@@ -57,12 +58,14 @@ export default function EmergencyInfoCard({ userProfile }: EmergencyInfoCardProp
           </div>
         </div>
         <div className="mt-4">
-          <Button variant="outline" className="mr-3">
-            <Edit className="mr-2 h-4 w-4 text-gray-500" />
-            Update Emergency Info
-          </Button>
-          <Button 
-            variant="secondary" 
+          <Link href="/profile?tab=emergency">
+            <Button variant="outline" className="mr-3">
+              <Edit className="mr-2 h-4 w-4 text-gray-500" />
+              Update Emergency Info
+            </Button>
+          </Link>
+          <Button
+            variant="secondary"
             onClick={() => setShowQrCode(true)}
           >
             <QrCode className="mr-2 h-4 w-4 text-white" />
@@ -78,11 +81,13 @@ export default function EmergencyInfoCard({ userProfile }: EmergencyInfoCardProp
             <DialogTitle>Emergency Access QR Code</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center justify-center p-4">
-            <div className="bg-white p-4 rounded-lg">
-              <QRCodeSVG 
-                value={`https://medivault.app/emergency/${userProfile?.id || "user"}`} 
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <QRCodeSVG
+                value={`${window.location.origin}/emergency/${userProfile?.id || "user"}`}
                 size={200}
                 level="H"
+                bgColor={"#FFFFFF"}
+                fgColor={"#000000"}
               />
             </div>
             <div className="mt-4 text-center">
